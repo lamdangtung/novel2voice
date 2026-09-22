@@ -29,4 +29,6 @@ TTS_PITCH = os.getenv("TTS_PITCH", "+0Hz")
 MAX_CHUNK_CHARS = int(os.getenv("MAX_CHUNK_CHARS", "2000"))
 PAUSE_BETWEEN_CHUNKS_MS = int(os.getenv("PAUSE_BETWEEN_CHUNKS_MS", "300"))
 TTS_CONCURRENCY = int(os.getenv("TTS_CONCURRENCY", "3"))
-
+PIPER_MODEL_PATH  = os.getenv("PIPER_MODEL_PATH", "models/piper/vi_VN-vais1000-medium.onnx") 
+PIPER_CONFIG_PATH = os.getenv("PIPER_CONFIG_PATH", "models/piper/vi_VN-vais1000-medium.onnx.json") 
+PIPER_NUM_WORKERS = int(os.getenv("PIPER_NUM_WORKERS", "4"))
