@@ -11,12 +11,18 @@ from src.translator import NovelTranslator
 from src.tts import get_tts_provider
 from src.pipeline import NovelPipeline
 from src.utils import natural_sort_paths
+import logging
 
 app = typer.Typer(
     name="novel2voice",
     help="Automation tool: Dịch truyện tiếng Anh sang tiếng Việt & Chuyển đổi thành giọng đọc Audio."
 )
 console = Console()
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    datefmt="%H:%M:%S",
+)
 
 
 @app.command("process")
