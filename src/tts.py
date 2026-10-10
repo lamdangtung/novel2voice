@@ -630,63 +630,34 @@ class VieNeuTTSProvider(BaseTTSProvider):
     # Save / convert
     # ------------------------------------------------------------
     def _save_with_format(self, audio, output_path: Path):
-        """Lưu audio ra .wav hoặc .mp3."""
+        """Publish a complete encoded file atomically; interrupted writes stay temporary."""
         import subprocess
         import tempfile
 
         output_path.parent.mkdir(parents=True, exist_ok=True)
         ext = output_path.suffix.lower()
-
-        if ext == ".wav":
-            t0 = time.perf_counter()
-            self._tts.save(audio, str(output_path))
-            logger.debug(
-                "  ↳ Lưu WAV: %s (%s) trong %s",
-                output_path.name, _fmt_size(output_path), _fmt_secs(time.perf_counter() - t0),
-            )
-        elif ext == ".mp3":
-            tmp = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
-            wav_path = Path(tmp.name)
-            tmp.close()
-            try:
-                t0 = time.perf_counter()
-                self._tts.save(audio, str(wav_path))
-                wav_size = wav_path.stat().st_size if wav_path.exists() else 0
-                logger.debug(
-                    "  ↳ Lưu WAV tạm: %s trong %s",
-                    _fmt_size(wav_path), _fmt_secs(time.perf_counter() - t0),
-                )
-                if wav_size < 1000:
-                    logger.warning(
-                        "WAV tạm quá nhỏ (%d bytes) — có thể synth thất bại", wav_size
-                    )
-
-                t1 = time.perf_counter()
-                result = subprocess.run(
-                    ["ffmpeg", "-y", "-loglevel", "error",
-                     "-i", str(wav_path),
-                     "-codec:a", "libmp3lame", "-b:a", "128k",
-                     str(output_path)],
-                    capture_output=True, text=True,
-                )
-                if result.returncode != 0:
-                    logger.error(
-                        "ffmpeg convert MP3 thất bại cho %s: %s",
-                        output_path.name, result.stderr.strip(),
-                    )
-                    raise RuntimeError(f"ffmpeg lỗi cho {output_path.name}: {result.stderr}")
-                logger.debug(
-                    "  ↳ Convert MP3: %s (%s) trong %s",
-                    output_path.name, _fmt_size(output_path),
-                    _fmt_secs(time.perf_counter() - t1),
-                )
-            finally:
-                try:
-                    wav_path.unlink()
-                except OSError:
-                    pass
-        else:
+        if ext not in (".wav", ".mp3"):
             raise ValueError(f"VieNeuTTSProvider chỉ hỗ trợ .wav hoặc .mp3, nhận: {ext}")
+        with tempfile.NamedTemporaryFile(suffix=".wav", dir=output_path.parent, delete=False) as stream:
+            wav_path = Path(stream.name)
+        encoded = output_path.with_name(f".{output_path.stem}.writing.mp3")
+        try:
+            self._tts.save(audio, str(wav_path))
+            if wav_path.stat().st_size < 1000:
+                raise RuntimeError(f"WAV rỗng sau synth: {output_path.name}")
+            if ext == ".wav":
+                wav_path.replace(output_path)
+            else:
+                result = subprocess.run(
+                    ["ffmpeg", "-y", "-loglevel", "error", "-i", str(wav_path),
+                     "-codec:a", "libmp3lame", "-b:a", "128k", str(encoded)],
+                    capture_output=True, text=True)
+                if result.returncode != 0:
+                    raise RuntimeError(f"ffmpeg lỗi cho {output_path.name}: {result.stderr}")
+                encoded.replace(output_path)
+        finally:
+            wav_path.unlink(missing_ok=True)
+            encoded.unlink(missing_ok=True)
 
     # ------------------------------------------------------------
     # Single
@@ -795,7 +766,10 @@ class VieNeuTTSProvider(BaseTTSProvider):
             raise
         infer_time = time.perf_counter() - t_infer
 
-        n_audios = len(audios) if hasattr(audios, "__len__") else None
+        audios = list(audios)
+        if len(audios) != len(tasks):
+            raise RuntimeError(f"VieNeu trả về {len(audios)} audio cho {len(tasks)} đoạn.")
+        n_audios = len(audios)
         logger.info(
             "infer_batch xong: %s đoạn trong %s (%.2f đoạn/s)",
             n_audios if n_audios is not None else "?",

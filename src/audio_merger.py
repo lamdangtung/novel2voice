@@ -11,6 +11,26 @@ class AudioMerger:
     def __init__(self, ffmpeg_path: str = "ffmpeg"):
         self.ffmpeg_path = ffmpeg_path
 
+    def check_environment(self):
+        import shutil
+        if not shutil.which(self.ffmpeg_path) or not shutil.which("ffprobe"):
+            raise RuntimeError("Cần ffmpeg và ffprobe trong PATH trước khi tạo audio.")
+
+    def validate_audio(self, audio_file: Path) -> bool:
+        import math
+        if not audio_file.is_file() or audio_file.stat().st_size == 0:
+            return False
+        try:
+            res = subprocess.run(
+                ["ffprobe", "-v", "error", "-select_streams", "a:0",
+                 "-show_entries", "stream=codec_type", "-of", "csv=p=0", str(audio_file)],
+                capture_output=True, text=True, timeout=30)
+            duration = self.get_duration(audio_file)
+            return (res.returncode == 0 and res.stdout.strip() == "audio"
+                    and duration is not None and math.isfinite(duration) and duration > 0)
+        except (OSError, subprocess.TimeoutExpired):
+            return False
+
     def merge_mp3_files(
         self,
         audio_files: List[Path],
@@ -104,7 +124,7 @@ class AudioMerger:
                 "-of", "default=noprint_wrappers=1:nokey=1",
                 str(audio_file)
             ]
-            res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=30)
             if res.returncode == 0 and res.stdout.strip():
                 return float(res.stdout.strip())
         except Exception:

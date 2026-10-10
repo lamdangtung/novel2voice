@@ -9,6 +9,8 @@ class TextChunker:
     """
 
     def __init__(self, max_chars: int = 1500):
+        if max_chars < 1:
+            raise ValueError("max_chars phải >= 1.")
         self.max_chars = max_chars
 
     def split_into_paragraphs(self, text: str) -> List[str]:
@@ -48,7 +50,11 @@ class TextChunker:
                             sub_chunk = ""
                         words = sent.split()
                         w_chunk = ""
+                        bounded_words = []
                         for word in words:
+                            bounded_words.extend(word[i:i + self.max_chars]
+                                                 for i in range(0, len(word), self.max_chars))
+                        for word in bounded_words:
                             if len(w_chunk) + len(word) + 1 <= self.max_chars:
                                 w_chunk = f"{w_chunk} {word}" if w_chunk else word
                             else:

@@ -173,7 +173,7 @@ def tts_command(
     voice: Optional[str] = typer.Option(
         None,
         "--voice", "-v",
-        help=f"Giọng đọc TTS (mặc định: {config.TTS_VOICE})."
+        help="Giọng đọc theo provider; VieNeu mặc định dùng VIENEU_VOICE."
     ),
     rate: Optional[str] = typer.Option(
         None,
@@ -183,7 +183,7 @@ def tts_command(
     provider: Optional[str] = typer.Option(
         None,
         "--provider", "-p",
-        help=f"Nhà cung cấp TTS ('edge-tts' hoặc 'openai', mặc định: {config.TTS_PROVIDER})."
+        help=f"Nhà cung cấp TTS ('vieneu', 'piper', 'edge-tts', 'openai', mặc định: {config.TTS_PROVIDER})."
     ),
     cleanup_temp: bool = typer.Option(
         True,
@@ -198,18 +198,24 @@ def tts_command(
     concurrency: int = typer.Option(
         config.TTS_CONCURRENCY,
         "--concurrency", "-j",
+        min=1,
         help=f"Số luồng xử lý TTS song song (mặc định: {config.TTS_CONCURRENCY})."
-    )
+    ),
+    resume: bool = typer.Option(True, "--resume/--no-resume", help="Tái sử dụng kết quả hợp lệ; --no-resume tạo lại audio."),
+    state_dir: Path = typer.Option(config.OUTPUT_DIR / ".state", "--state-dir", help="Thư mục checkpoint SQLite và audio tạm."),
+    retries: int = typer.Option(2, "--retries", min=0, help="Số lần thử lại đoạn lỗi trong một lần chạy."),
+    continue_on_error: bool = typer.Option(True, "--continue-on-error/--fail-fast", help="Tiếp tục các chương khác khi một chương lỗi."),
 ):
     """
     Chuyển đổi file văn bản tiếng Việt sang file âm thanh MP3.
     """
+    tts_prov = None
     try:
         tts_prov = get_tts_provider(provider_name=provider, voice=voice, rate=rate)
         pipeline = NovelPipeline(tts_provider=tts_prov, concurrency=concurrency)
 
         if vi_path.is_file():
-            pipeline.tts_only(vi_file=vi_path, output_audio=output_audio, cleanup_temp=cleanup_temp)
+            pipeline.tts_only(vi_file=vi_path, output_audio=output_audio, cleanup_temp=cleanup_temp, resume=resume, state_dir=state_dir, retries=retries)
         elif vi_path.is_dir():
             files = natural_sort_paths(list(vi_path.glob("*.txt")))
             if not files:
@@ -221,15 +227,70 @@ def tts_command(
                 vi_files=files,
                 combine=combine,
                 output_audio=output_audio,
-                cleanup_temp=cleanup_temp
+                cleanup_temp=cleanup_temp,
+                resume=resume, state_dir=state_dir, retries=retries,
+                continue_on_error=continue_on_error
             )
         else:
             console.print(f"[bold red]Đường dẫn không tồn tại:[/bold red] {vi_path}")
             raise typer.Exit(code=1)
 
+    except KeyboardInterrupt:
+        console.print("[yellow]Đã dừng. Checkpoint được giữ; chạy lại cùng lệnh để tiếp tục.[/yellow]")
+        raise typer.Exit(code=130)
     except Exception as e:
         console.print(f"\n[bold red]✖ Lỗi:[/bold red] {e}")
         raise typer.Exit(code=1)
+    finally:
+        if tts_prov is not None and hasattr(tts_prov, "close"):
+            tts_prov.close()
+
+
+@app.command("doctor")
+def doctor_command(
+    provider: Optional[str] = typer.Option(None, "--provider", "-p"),
+):
+    """Kiểm tra dependency và cấu hình TTS, không nạp model hay gọi mạng."""
+    import importlib.util
+    from src.audio_merger import AudioMerger
+    tts_prov = None
+    try:
+        AudioMerger().check_environment()
+        tts_prov = get_tts_provider(provider_name=provider)
+        modules = {"VieNeuTTSProvider": "vieneu", "EdgeTTSProvider": "edge_tts",
+                   "LocalTTSProvider": "piper", "OpenAITTSProvider": "openai"}
+        module = modules[type(tts_prov).__name__]
+        if importlib.util.find_spec(module) is None:
+            raise RuntimeError(f"Chưa cài dependency: {module}")
+        if getattr(tts_prov, "mode", None) == "remote":
+            if not tts_prov.api_base or not tts_prov.model_name:
+                raise ValueError("Remote mode cần VIENEU_API_BASE và VIENEU_MODEL_NAME.")
+        console.print(f"[green]✔ ffmpeg, ffprobe, dependency: {type(tts_prov).__name__}[/green]")
+        console.print(f"Chunk: {config.MAX_CHUNK_CHARS} ký tự; batch: {config.TTS_CONCURRENCY} đoạn.")
+        console.print("Kiểm tra này chưa xác nhận model nạp được hoặc chất lượng giọng đọc.")
+    except Exception as error:
+        console.print(f"[red]✖ {error}[/red]")
+        raise typer.Exit(code=1)
+    finally:
+        if tts_prov is not None and hasattr(tts_prov, "close"):
+            tts_prov.close()
+
+
+@app.command("status")
+def status_command(
+    state_dir: Path = typer.Option(config.OUTPUT_DIR / ".state", "--state-dir"),
+):
+    """Xem trạng thái các phiên tạo audio đã lưu."""
+    from src.tts_jobs import JobStore
+    if not (state_dir / "jobs.sqlite3").exists():
+        console.print("Chưa có job TTS.")
+        return
+    table = Table(title="Trạng thái TTS")
+    for column in ("Chương", "Trạng thái", "Cập nhật", "Lỗi"):
+        table.add_column(column)
+    for row in JobStore(state_dir).rows():
+        table.add_row(row["source"], row["status"], row["updated_at"], row["error"] or "")
+    console.print(table)
 
 
 @app.command("voices")

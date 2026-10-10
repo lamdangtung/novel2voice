@@ -1,11 +1,9 @@
 import time
 from pathlib import Path
 from typing import Optional, List, Tuple
-from tqdm import tqdm
 from rich.console import Console
 
 from src import config
-from src.glossary import Glossary
 from src.translator import NovelTranslator
 from src.text_chunker import TextChunker
 from src.tts import get_tts_provider, BaseTTSProvider
@@ -27,144 +25,101 @@ class NovelPipeline:
         chunker: Optional[TextChunker] = None,
         concurrency: Optional[int] = None,
     ):
-        self.translator = translator or NovelTranslator()
+        self.translator = translator
         self.tts_provider = tts_provider or get_tts_provider()
         self.audio_merger = audio_merger or AudioMerger()
         self.chunker = chunker or TextChunker(max_chars=config.MAX_CHUNK_CHARS)
-        self.concurrency = concurrency or config.TTS_CONCURRENCY
+        self.concurrency = config.TTS_CONCURRENCY if concurrency is None else concurrency
+        if self.concurrency < 1:
+            raise ValueError("concurrency phải >= 1.")
 
     def translate_only(self, input_file: Path, output_file: Optional[Path] = None) -> Path:
         """Chỉ thực hiện bước dịch EN -> VI."""
         console.print(f"[bold cyan]>> Đang dịch file:[/bold cyan] {input_file.name}")
+        if self.translator is None:
+            self.translator = NovelTranslator()
         vi_file = self.translator.translate_file(input_file, output_file)
         console.print(f"[bold green]✔ Đã dịch xong và lưu tại:[/bold green] {vi_file}")
         return vi_file
 
-    def tts_only(
-        self,
-        vi_file: Path,
-        output_audio: Optional[Path] = None,
-        cleanup_temp: bool = True
-    ) -> Path:
-        """Chuyển đổi file tiếng Việt có sẵn thành audio MP3."""
-        if not vi_file.exists():
-            raise FileNotFoundError(f"File tiếng Việt không tồn tại: {vi_file}")
+    def _tts_runner(self, state_dir=None, retries=2):
+        from src.tts_jobs import TTSJobRunner
+        return TTSJobRunner(self.tts_provider, self.audio_merger, self.chunker,
+                            state_dir or config.OUTPUT_DIR / ".state",
+                            self.concurrency, retries)
 
-        text = vi_file.read_text(encoding="utf-8").strip()
-        if not text:
-            raise ValueError(f"File {vi_file} rỗng, không có nội dung để đọc.")
+    def tts_only(self, vi_file: Path, output_audio: Optional[Path] = None,
+                 cleanup_temp: bool = True, resume: bool = True,
+                 state_dir: Optional[Path] = None, retries: int = 2) -> Path:
+        """Generate a Vietnamese chapter with durable checkpoints."""
+        self.audio_merger.check_environment()
+        base_name = vi_file.stem.removesuffix("_vi")
+        output_audio = output_audio or config.OUTPUT_DIR / f"{base_name}.mp3"
+        return self._tts_runner(state_dir, retries).run(
+            vi_file, output_audio, resume=resume, cleanup=cleanup_temp)
 
-        if output_audio is None:
-            # Lược bỏ hậu tố _vi nếu có để tên file audio gọn gàng
-            base_name = vi_file.stem
-            if base_name.endswith("_vi"):
-                base_name = base_name[:-3]
-            output_audio = config.OUTPUT_DIR / f"{base_name}.mp3"
-
-        chunks = self.chunker.chunk_text(text)
-        console.print(f"[bold cyan]>> Tạo audio:[/bold cyan] {len(chunks)} đoạn văn bản (chạy song song {self.concurrency} luồng)...")
-
-        temp_dir = config.TEMP_DIR / vi_file.stem
-        temp_dir.mkdir(parents=True, exist_ok=True)
-
-        tasks = [
-            (chunk, temp_dir / f"chunk_{idx:04d}.mp3")
-            for idx, chunk in enumerate(chunks, start=1)
-        ]
-        chunk_files = [path for _, path in tasks]
-
-        try:
-            self.tts_provider.generate_batch(
-                tasks=tasks,
-                max_concurrency=self.concurrency,
-                show_progress=True
-            )
-
-            console.print("[bold cyan]>> Đang ghép nối các đoạn audio bằng ffmpeg...[/bold cyan]")
-            final_audio = self.audio_merger.merge_mp3_files(
-                audio_files=chunk_files,
-                output_file=output_audio,
-                cleanup_inputs=cleanup_temp
-            )
-            duration = self.audio_merger.get_duration(final_audio)
-            duration_str = f" ({duration:.1f}s)" if duration else ""
-            console.print(f"[bold green]✔ Đã tạo file audio thành công:[/bold green] {final_audio}{duration_str}")
-            return final_audio
-
-        finally:
-            if cleanup_temp and temp_dir.exists():
-                import shutil
-                shutil.rmtree(temp_dir, ignore_errors=True)
-
-    def tts_batch(
-        self,
-        vi_files: List[Path],
-        combine: bool = False,
-        output_audio: Optional[Path] = None,
-        cleanup_temp: bool = True
-    ) -> List[Path]:
-        """
-        Xử lý TTS cho danh sách nhiều file tiếng Việt theo thứ tự tự nhiên.
-        - combine=False (Mặc định): Mỗi file text tạo ra 1 file mp3 riêng biệt tương ứng.
-        - combine=True: Gộp toàn bộ nội dung của tất cả các file thành 1 file mp3 duy nhất theo thứ tự.
-        """
+    def tts_batch(self, vi_files: List[Path], combine: bool = False,
+                  output_audio: Optional[Path] = None, cleanup_temp: bool = True,
+                  resume: bool = True, state_dir: Optional[Path] = None,
+                  retries: int = 2, continue_on_error: bool = True) -> List[Path]:
+        """Checkpoint chapters independently; combine only a complete batch."""
         from src.utils import natural_sort_paths
         sorted_files = natural_sort_paths(vi_files)
-
-        if not combine:
-            output_files = []
-            for f in sorted_files:
-                out = self.tts_only(vi_file=f, cleanup_temp=cleanup_temp)
+        if not sorted_files:
+            raise ValueError("Danh sách chương trống.")
+        if output_audio and not combine:
+            raise ValueError("--output cho thư mục yêu cầu --combine.")
+        targets = [config.OUTPUT_DIR / f"{f.stem.removesuffix('_vi')}.mp3"
+                   for f in sorted_files]
+        if len(set(p.resolve() for p in targets)) != len(targets):
+            raise ValueError("Tên chương trùng đường dẫn audio đầu ra.")
+        self.audio_merger.check_environment()
+        runner = self._tts_runner(state_dir, retries)
+        output_files, failures = [], []
+        self.last_batch_report = {"completed": [], "failed": [], "interrupted": []}
+        self._save_batch_report(runner, sorted_files)
+        for source, target in zip(sorted_files, targets):
+            try:
+                out = runner.run(source, target, resume=resume, cleanup=cleanup_temp)
                 output_files.append(out)
-            return output_files
+                self.last_batch_report["completed"].append(str(source))
+            except (KeyboardInterrupt, SystemExit):
+                self.last_batch_report["interrupted"].append(str(source))
+                self._save_batch_report(runner, sorted_files)
+                raise
+            except Exception as error:
+                failures.append((source, str(error)))
+                self.last_batch_report["failed"].append({"source": str(source), "error": str(error)})
+                console.print(f"[red]✖ {source.name}: {error}[/red]")
+                if not continue_on_error:
+                    self._save_batch_report(runner, sorted_files)
+                    break
+            self._save_batch_report(runner, sorted_files)
+        console.print(f"[cyan]Tổng kết: {len(output_files)}/{len(sorted_files)} chương hoàn thành; "
+                      f"{len(failures)} lỗi; {len(sorted_files)-len(output_files)-len(failures)} chưa xử lý.[/cyan]")
+        self._save_batch_report(runner, sorted_files)
+        if failures:
+            raise RuntimeError("Có chương thất bại. Chạy lại cùng lệnh để tiếp tục; "
+                               "chương hoàn thành sẽ được tái sử dụng.")
+        if combine:
+            target = output_audio or config.OUTPUT_DIR / "combined_novel.mp3"
+            if target.resolve() in {p.resolve() for p in output_files}:
+                raise ValueError("File gộp phải khác file audio từng chương.")
+            runner.combine(output_files, target, resume=resume)
+            console.print(f"[green]✔ Audio gộp: {target}[/green]")
+            return [target]
+        return output_files
 
-        # Trường hợp combine=True: Gộp tất cả các file vào chung 1 file audio
-        console.print(f"\n[bold cyan]>> Chế độ gộp (Combine): Ghép {len(sorted_files)} file thành 1 file audio duy nhất...[/bold cyan]")
-        batch_temp_dir = config.TEMP_DIR / f"batch_combined_{int(time.time())}"
-        batch_temp_dir.mkdir(parents=True, exist_ok=True)
-
-        tasks = []
-        chunk_global_idx = 1
-        for f_idx, f in enumerate(sorted_files, start=1):
-            text = f.read_text(encoding="utf-8").strip()
-            if not text:
-                continue
-            chunks = self.chunker.chunk_text(text)
-            for chunk in chunks:
-                chunk_path = batch_temp_dir / f"chunk_{chunk_global_idx:05d}.mp3"
-                tasks.append((chunk, chunk_path))
-                chunk_global_idx += 1
-
-        if not tasks:
-            raise ValueError("Không có nội dung văn bản nào để tạo audio.")
-
-        console.print(f"[bold cyan]>> Tổng cộng {len(tasks)} đoạn cần tạo TTS (chạy song song {self.concurrency} luồng)...[/bold cyan]")
-        try:
-            self.tts_provider.generate_batch(
-                tasks=tasks,
-                max_concurrency=self.concurrency,
-                show_progress=True
-            )
-            all_chunk_files = [p for _, p in tasks]
-
-            if output_audio is None:
-                output_audio = config.OUTPUT_DIR / "combined_novel.mp3"
-
-            console.print(f"[bold cyan]>> Đang ghép nối tất cả {len(all_chunk_files)} đoạn audio thành 1 file...[/bold cyan]")
-            final_audio = self.audio_merger.merge_mp3_files(
-                audio_files=all_chunk_files,
-                output_file=output_audio,
-                cleanup_inputs=cleanup_temp
-            )
-            duration = self.audio_merger.get_duration(final_audio)
-            duration_str = f" ({duration:.1f}s)" if duration else ""
-            console.print(f"[bold green]✔ Đã tạo file audio gộp thành công:[/bold green] {final_audio}{duration_str}\n")
-            return [final_audio]
-
-        finally:
-            if cleanup_temp and batch_temp_dir.exists():
-                import shutil
-                shutil.rmtree(batch_temp_dir, ignore_errors=True)
+    def _save_batch_report(self, runner, sorted_files):
+        import json
+        report = self.last_batch_report
+        processed = set(report["completed"] + report["interrupted"] +
+                        [item["source"] for item in report["failed"]])
+        report["unprocessed"] = [str(f) for f in sorted_files if str(f) not in processed]
+        report_path = runner.store.directory / "last_batch_report.json"
+        report_temp = report_path.with_suffix(".partial.json")
+        report_temp.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+        report_temp.replace(report_path)
 
     def process_file(
         self,

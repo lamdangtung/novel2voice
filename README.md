@@ -141,3 +141,57 @@ Reich,Đế chế Reich
 ```
 AI dịch thuật sẽ tự động đưa các quy tắc này vào prompt để đảm bảo sự nhất quán tuyệt đối.
 
+
+## Phase 1: Pipeline chương tiếng Việt → audio có checkpoint
+
+Phase này nhận các file TXT tiếng Việt theo chương và dùng VieNeu theo cấu hình hiện tại. Không cần API key dịch thuật. Không bao gồm fetch web, dịch, video hoặc YouTube.
+
+```bash
+# Kiểm tra môi trường; không nạp model hoặc gọi mạng
+python -m src.main doctor --provider vieneu
+
+# Tạo audio từng chương; resume bật mặc định
+python -m src.main tts input/ --provider vieneu
+
+# Dừng bằng Ctrl+C rồi chạy lại cùng lệnh để tiếp tục
+python -m src.main tts input/ --provider vieneu --resume
+
+# Giữ các đoạn sau khi thành công, hữu ích khi biên tập nội dung
+python -m src.main tts input/ --provider vieneu --no-cleanup
+
+# Ghép các chương thành một audio; vẫn giữ MP3 riêng từng chương
+python -m src.main tts input/ --provider vieneu --combine -o output/toan_tap.mp3
+
+# Xem trạng thái
+python -m src.main status
+
+# Bắt buộc tạo lại, bỏ qua cache
+python -m src.main tts input/ --provider vieneu --no-resume
+
+# Chỉ thử một lần và dừng batch ngay khi gặp chương lỗi
+python -m src.main tts input/ --provider vieneu --retries 0 --fail-fast
+```
+
+### Cơ chế lưu và khôi phục
+
+- `output/.state/jobs.sqlite3`: trạng thái chương, đoạn, job ghép tập, số lần thử và lỗi.
+- `output/.state/chunks/`: audio đoạn theo dấu vết nội dung và cấu hình provider.
+- `output/.state/last_batch_report.json`: báo cáo batch gần nhất, gồm chương hoàn thành, lỗi, bị ngắt và chưa xử lý.
+- Có thể đổi nơi lưu bằng `--state-dir`; dùng lại cùng thư mục này để resume.
+- Mỗi batch TTS xử lý tối đa `--concurrency` đoạn để giới hạn bộ nhớ và lưu checkpoint thường xuyên. Với VieNeu CPU, đây là kích thước batch, không bảo đảm có từng ấy luồng inference chạy đồng thời.
+- Chương hoàn thành chỉ được bỏ qua nếu file đầu ra hợp lệ và checksum khớp checkpoint. Đoạn còn trong cache được tái sử dụng theo nội dung, cấu hình và checksum đã lưu.
+- Đổi nội dung hoặc cấu hình tạo một phiên chương mới. Với `--no-cleanup`, các đoạn không thay đổi có thể được tái sử dụng. Với cleanup mặc định, cache của chương thành công đã bị xóa nên chương đã sửa cần tạo lại các đoạn thiếu.
+- Lỗi TTS, lỗi ghép hoặc Ctrl+C giữ các đoạn hoàn thành. `--retries 2` nghĩa là tối đa 3 lần thử trong một lần chạy; chỉ thử lại đoạn chưa thành công.
+- Batch mặc định tiếp tục các chương khác khi một chương lỗi, nhưng kết thúc với mã lỗi. Không ghép tập nếu còn chương thất bại; file TXT rỗng được báo lỗi, không âm thầm bỏ qua.
+- Audio được kiểm tra có stream âm thanh và thời lượng dương bằng ffprobe. Sau ghép kiểm tra thời lượng tổng với dung sai `max(1 giây, 2%)`. Kiểm tra kỹ thuật này không xác nhận giọng đọc đúng hoặc đủ từng từ.
+- File cuối chỉ được thay thế sau khi ghép và kiểm tra thành công. Mỗi state-dir có khóa chống hai tiến trình xử lý chung checkpoint trong cùng thời điểm.
+- MP3 cũ chưa có checkpoint không được tự coi là hoàn thành; lần chạy đầu với pipeline mới sẽ tạo lại các chương được chọn. Nên thử một chương với `-o` trỏ tới file mới trước khi chạy cả thư mục.
+- Nếu tiến trình bị kill cưỡng bức, batch đang chạy có thể phải tạo lại; các batch đã checkpoint vẫn được giữ. Trạng thái `running`/`merging` cũ được khôi phục khi chạy lại cùng lệnh.
+
+### Kiểm thử
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+Bộ kiểm thử dùng TTS giả và FFmpeg/ffprobe thật để kiểm tra resume, retry, ngắt giữa chừng, đổi nội dung/giọng, audio hỏng, lỗi ghép và xử lý batch. Không tải model hoặc gọi dịch vụ TTS.
