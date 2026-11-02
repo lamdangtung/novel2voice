@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "story_title": "Xuyên không 1985: Phố Wall",
+  "genres": [
+    "xuyên không",
+    "tài chính"
+  ],
+  "description_intro": "Truyện audio tiếng Việt: hành trình trở về năm 1985 giữa thế giới tài chính Phố Wall.",
+  "description_footer": "Đăng ký kênh để theo dõi những chương tiếp theo.",
+  "base_tags": [
+    "truyện audio",
+    "audiobook tiếng Việt",
+    "xuyên không 1985",
+    "Phố Wall"
+  ],
+  "hashtags": [
+    "TruyenAudio",
+    "XuyenKhong",
+    "Audiobook"
+  ],
+  "default_language": "vi",
+  "default_audio_language": "vi",
+  "category_id": "22",
+  "privacy": "private",
+  "made_for_kids": false,
+  "notify_subscribers": true,
+  "contains_synthetic_media": true
+}

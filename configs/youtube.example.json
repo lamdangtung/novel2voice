@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "defaults": {
+    "description": "Truyện audio tiếng Việt, theo dõi câu chuyện qua từng chương.\n\nĐăng ký kênh để theo dõi các chương tiếp theo.",
+    "tags": [
+      "truyện audio",
+      "truyện tiếng Việt",
+      "audiobook"
+    ],
+    "hashtags": [
+      "TruyenAudio",
+      "TruyenTiengViet",
+      "Audiobook"
+    ],
+    "category_id": "22",
+    "default_language": "vi",
+    "default_audio_language": "vi",
+    "privacy": "private",
+    "made_for_kids": false,
+    "notify_subscribers": true,
+    "contains_synthetic_media": true
+  },
+  "videos": {
+    "ixdzs8_644938_1_zh.mp4": {
+      "title": "Xuyên không 1985: Phố Wall | Chương 1 — Quy tắc | Truyện audio",
+      "description": "Chương 1 — Quy tắc. Mở đầu hành trình xuyên không về năm 1985 trong thế giới tài chính Phố Wall.\n\nNghe truyện audio tiếng Việt và theo dõi kênh để đón các chương tiếp theo.",
+      "tags": [
+        "xuyên không 1985",
+        "Phố Wall",
+        "truyện tài chính",
+        "truyện audio",
+        "audiobook tiếng Việt"
+      ]
+    }
+  }
+}

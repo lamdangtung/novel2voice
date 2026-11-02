@@ -221,3 +221,14 @@ __marimo__/
 input
 output
 models
+# Local glossary evidence and locks (may contain story text)
+*.csv.sqlite3*
+*.csv.lock
+
+# OAuth credentials and refresh tokens
+.secrets/
+client_secret*.json
+client_secrets*.json
+youtube_token*.json
+assets
+glossary.csv

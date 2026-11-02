@@ -14,6 +14,9 @@ TEMP_DIR = OUTPUT_DIR / ".temp"
 GLOSSARY_PATH = BASE_DIR / "glossary.csv"
 
 # LLM / Translation Settings
+TRANSLATION_PROVIDER = os.getenv("TRANSLATION_PROVIDER", "openai")
+DEEPSEEK_MAX_CHUNKS_PER_CONVERSATION = int(os.getenv("DEEPSEEK_MAX_CHUNKS_PER_CONVERSATION", "5"))
+DEEPSEEK_MODEL = os.getenv("DEEPSEEK_MODEL", "deepseek-chat")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", None)
 TRANSLATION_MODEL = os.getenv("TRANSLATION_MODEL", "gpt-4o-mini")
@@ -46,3 +49,29 @@ VIENEU_MODEL_NAME = os.getenv("VIENEU_MODEL_NAME", None)  # Remote mode only
 
 # HuggingFace Token (for private/gated models)
 HF_TOKEN = os.getenv("HF_TOKEN", None)
+# Automatic glossary learning (per glossary CSV).
+GLOSSARY_AUTO_UPDATE = os.getenv("GLOSSARY_AUTO_UPDATE", "true").lower() in ("1", "true", "yes")
+GLOSSARY_MIN_OCCURRENCES = int(os.getenv("GLOSSARY_MIN_OCCURRENCES", "3"))
+GLOSSARY_MIN_DISTINCT_CHUNKS = int(os.getenv("GLOSSARY_MIN_DISTINCT_CHUNKS", "2"))
+GLOSSARY_MAX_AUTO_ENTRIES = int(os.getenv("GLOSSARY_MAX_AUTO_ENTRIES", "500"))
+GLOSSARY_MAX_PROMPT_ENTRIES = int(os.getenv("GLOSSARY_MAX_PROMPT_ENTRIES", "100"))
+GLOSSARY_MAX_CANDIDATES = int(os.getenv("GLOSSARY_MAX_CANDIDATES", "2000"))
+
+# Grouping for the video stage; chapter TXT/audio files stay separate.
+VIDEO_CHAPTERS_PER_VIDEO = int(os.getenv("VIDEO_CHAPTERS_PER_VIDEO", "1"))
+
+VIDEO_WIDTH = int(os.getenv("VIDEO_WIDTH", "1920"))
+VIDEO_HEIGHT = int(os.getenv("VIDEO_HEIGHT", "1080"))
+VIDEO_FPS = int(os.getenv("VIDEO_FPS", "30"))
+VIDEO_FONT_PATH = os.getenv("VIDEO_FONT_PATH") or None
+
+# YouTube publishing is opt-in; OAuth secrets are local and git-ignored.
+YOUTUBE_CLIENT_SECRETS_FILE = Path(os.getenv("YOUTUBE_CLIENT_SECRETS_FILE", str(BASE_DIR / ".secrets/youtube/client_secret.json")))
+YOUTUBE_TOKEN_FILE = Path(os.getenv("YOUTUBE_TOKEN_FILE", str(BASE_DIR / ".secrets/youtube/token.json")))
+YOUTUBE_CHANNEL_ID = os.getenv("YOUTUBE_CHANNEL_ID", "")
+YOUTUBE_PRIVACY = os.getenv("YOUTUBE_PRIVACY", "private")
+YOUTUBE_CATEGORY_ID = os.getenv("YOUTUBE_CATEGORY_ID", "22")
+YOUTUBE_STATE_DIR = Path(os.getenv("YOUTUBE_STATE_DIR", str(OUTPUT_DIR / ".state/youtube")))
+
+# Separate episode metadata calls; translation flow stays unchanged.
+METADATA_MAX_INPUT_CHARS = int(os.getenv("METADATA_MAX_INPUT_CHARS", "60000"))

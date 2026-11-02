@@ -1,0 +1,4 @@
+# Optional YouTube OAuth dependencies; no API key or server needed.
+google-auth>=2.29
+google-auth-oauthlib>=1.2
+requests>=2.31
