@@ -1,0 +1,14 @@
+{
+  "missing_dependency": {
+    "label": "Fixture: thiếu thư viện provider",
+    "status": "missing",
+    "message": "Giả lập thư viện provider chưa được cài; không sửa môi trường thật.",
+    "remedy": "Chọn Môi trường thật và kiểm tra lại để bỏ giả lập."
+  },
+  "missing_model": {
+    "label": "Fixture: thiếu model",
+    "status": "missing",
+    "message": "Giả lập model không có sẵn; không xóa hoặc tải model thật.",
+    "remedy": "Chọn Môi trường thật và kiểm tra lại để bỏ giả lập."
+  }
+}

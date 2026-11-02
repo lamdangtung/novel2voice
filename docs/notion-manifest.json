@@ -1,0 +1,229 @@
+{
+  "root": {
+    "id": "40761b54-0cf6-8057-9b4d-ec6df11c61fb",
+    "url": "https://app.notion.com/p/40761b540cf680579b4dec6df11c61fb"
+  },
+  "pages": {
+    "overview": {
+      "id": "40761b54-0cf6-81e2-8f3f-de2a092531eb",
+      "url": "https://app.notion.com/p/40761b540cf681e28f3fde2a092531eb?pvs=204",
+      "properties": {
+        "title": "Tổng quan dự án"
+      }
+    },
+    "roadmap": {
+      "id": "40761b54-0cf6-81f6-9840-d68c1e5c39c7",
+      "url": "https://app.notion.com/p/40761b540cf681f69840d68c1e5c39c7?pvs=204",
+      "properties": {
+        "title": "Roadmap v1.0 → v2.0"
+      }
+    },
+    "hub": {
+      "id": "40761b54-0cf6-818f-8841-eddc3522be39",
+      "url": "https://app.notion.com/p/40761b540cf6818f8841eddc3522be39?pvs=204",
+      "properties": {
+        "title": "v1.1 — Web app"
+      }
+    },
+    "requirements": {
+      "id": "40761b54-0cf6-8138-a918-e0a678f59f15",
+      "url": "https://app.notion.com/p/40761b540cf68138a918e0a678f59f15?pvs=204",
+      "properties": {
+        "title": "Requirements v1.1"
+      }
+    },
+    "ui": {
+      "id": "40761b54-0cf6-81fa-b7e8-d206f8b14326",
+      "url": "https://app.notion.com/p/40761b540cf681fab7e8d206f8b14326?pvs=204",
+      "properties": {
+        "title": "UI/UX — Mock đã review"
+      }
+    },
+    "tasks": {
+      "id": "40761b54-0cf6-815b-a247-cae5fcde0c78",
+      "url": "https://app.notion.com/p/40761b540cf6815ba247cae5fcde0c78?pvs=204",
+      "properties": {
+        "title": "34 task và flow nghiệm thu"
+      }
+    },
+    "user_guide": {
+      "id": "40861b54-0cf6-8112-817b-c4d9c858119c",
+      "url": "https://app.notion.com/p/40861b540cf68112817bc4d9c858119c?pvs=204"
+    }
+  },
+  "synced_at": "2026-10-28",
+  "sync_mode": "manual_snapshot",
+  "sources": {
+    "roadmap.md": {
+      "sha256": "d5a14348809f2d42ac6544aee27ff67a3b2dee5a09e0ca4b30c0c3121984ecc5"
+    },
+    "docs/v1.1-requirements.md": {
+      "sha256": "74f7b122951b96a0f37ffc1af7965ff47da41f33d7e5b495aeabd3cd86303165"
+    },
+    "docs/tasks/v1.1/README.md": {
+      "sha256": "f7db528cabae8a84faec664f6accebe013b0869874be05e83ef2c05c32dd825a"
+    },
+    "docs/ui/v1.1/README.md": {
+      "sha256": "0aca58d08fb19a0f97f3cb3c5afc78216886a1cadeab70f5f8daad2a4b682d39"
+    },
+    "docs/ui/v1.1/index.html": {
+      "sha256": "e1be07a7b2846611b10014c497b4f7784a07327c4ec854f88ad48e8eae31e1fc"
+    }
+  },
+  "handover_pages": {
+    "T01": {
+      "id": "40761b54-0cf6-8190-b87e-e2f58558de9f",
+      "url": "https://app.notion.com/p/40761b540cf68190b87ee2f58558de9f?pvs=204"
+    },
+    "T02": {
+      "id": "40761b54-0cf6-81af-a0c6-d8a711ec9b7d",
+      "url": "https://app.notion.com/p/40761b540cf681afa0c6d8a711ec9b7d?pvs=204"
+    },
+    "T03": {
+      "id": "40761b54-0cf6-81e0-9f01-f45818d6eba1",
+      "url": "https://app.notion.com/p/40761b540cf681e09f01f45818d6eba1?pvs=204"
+    },
+    "T04": {
+      "id": "40861b54-0cf6-81ee-92b7-c6550bdf022d",
+      "url": "https://app.notion.com/p/40861b540cf681ee92b7c6550bdf022d?pvs=204"
+    },
+    "T05": {
+      "id": "40861b54-0cf6-8132-b5f3-e68d49814e5e",
+      "url": "https://app.notion.com/p/40861b540cf68132b5f3e68d49814e5e?pvs=204"
+    },
+    "T06": {
+      "id": "40861b54-0cf6-819b-828a-e82de18c88c6",
+      "url": "https://app.notion.com/p/40861b540cf6819b828ae82de18c88c6?pvs=204"
+    },
+    "T07": {
+      "id": "40861b54-0cf6-818c-9c3c-c36011850aae",
+      "url": "https://app.notion.com/p/40861b540cf6818c9c3cc36011850aae?pvs=204"
+    },
+    "T08": {
+      "id": "40861b54-0cf6-81ad-a48d-f5ccd78a0558",
+      "url": "https://app.notion.com/p/40861b540cf681ada48df5ccd78a0558?pvs=204"
+    },
+    "T09": {
+      "id": "40861b54-0cf6-8199-9efd-cba5d9f76024",
+      "url": "https://app.notion.com/p/40861b540cf681999efdcba5d9f76024?pvs=204"
+    },
+    "T10": {
+      "id": "40861b54-0cf6-8128-b834-e4f1493cf7cf",
+      "url": "https://app.notion.com/p/40861b540cf68128b834e4f1493cf7cf?pvs=204"
+    },
+    "T11": {
+      "id": "40861b54-0cf6-81fb-ba58-f3f037b557e9",
+      "url": "https://app.notion.com/p/40861b540cf681fbba58f3f037b557e9?pvs=204"
+    },
+    "T12": {
+      "id": "40861b54-0cf6-818d-af18-f0e06dd78530",
+      "url": "https://app.notion.com/p/40861b540cf6818daf18f0e06dd78530?pvs=204"
+    },
+    "T13": {
+      "id": "40861b54-0cf6-81e5-9aee-f6311b405416",
+      "url": "https://app.notion.com/p/40861b540cf681e59aeef6311b405416?pvs=204"
+    },
+    "T14": {
+      "id": "40861b54-0cf6-812f-b1d1-de3cd25e09e5",
+      "url": "https://app.notion.com/p/40861b540cf6812fb1d1de3cd25e09e5?pvs=204"
+    },
+    "T15": {
+      "id": "40861b54-0cf6-812a-99ea-c11ce39c180f",
+      "url": "https://app.notion.com/p/40861b540cf6812a99eac11ce39c180f?pvs=204"
+    },
+    "T16": {
+      "id": "40861b54-0cf6-81cf-a2c1-edff064a23d5",
+      "url": "https://app.notion.com/p/40861b540cf681cfa2c1edff064a23d5?pvs=204"
+    },
+    "T17": {
+      "id": "40861b54-0cf6-8159-a388-de85135b3aa0",
+      "url": "https://app.notion.com/p/40861b540cf68159a388de85135b3aa0?pvs=204"
+    },
+    "T18": {
+      "id": "40861b54-0cf6-817e-bc1f-ddf3c9affe41",
+      "url": "https://app.notion.com/p/40861b540cf6817ebc1fddf3c9affe41?pvs=204"
+    },
+    "T19": {
+      "id": "40861b54-0cf6-81a3-ba1a-c9e128dd5b5c",
+      "url": "https://app.notion.com/p/40861b540cf681a3ba1ac9e128dd5b5c?pvs=204"
+    },
+    "T20": {
+      "id": "40861b54-0cf6-819a-9301-d3dc6f20a42e",
+      "url": "https://app.notion.com/p/40861b540cf6819a9301d3dc6f20a42e?pvs=204"
+    },
+    "T21": {
+      "id": "40861b54-0cf6-814b-b55b-eaf2d454cb0d",
+      "url": "https://app.notion.com/p/40861b540cf6814bb55beaf2d454cb0d?pvs=204"
+    },
+    "T26": {
+      "id": "40861b54-0cf6-81a5-b10e-fe6fd9623953",
+      "url": "https://app.notion.com/p/40861b540cf681a5b10efe6fd9623953?pvs=204"
+    },
+    "T22": {
+      "id": "40861b54-0cf6-81cf-ba73-c908dcc5684f",
+      "url": "https://app.notion.com/p/40861b540cf681cfba73c908dcc5684f?pvs=204"
+    },
+    "T23": {
+      "id": "40861b54-0cf6-81bf-b3a8-cfd366062c6c",
+      "url": "https://app.notion.com/p/40861b540cf681bfb3a8cfd366062c6c?pvs=204",
+      "section": "T23"
+    },
+    "T24": {
+      "id": "40861b54-0cf6-81bf-b3a8-cfd366062c6c",
+      "url": "https://app.notion.com/p/40861b540cf681bfb3a8cfd366062c6c?pvs=204",
+      "section": "T24"
+    },
+    "T25": {
+      "id": "40861b54-0cf6-81bf-b3a8-cfd366062c6c",
+      "url": "https://app.notion.com/p/40861b540cf681bfb3a8cfd366062c6c?pvs=204",
+      "section": "T25"
+    },
+    "T27": {
+      "id": "40861b54-0cf6-81bf-b3a8-cfd366062c6c",
+      "url": "https://app.notion.com/p/40861b540cf681bfb3a8cfd366062c6c?pvs=204",
+      "section": "T27"
+    },
+    "T28": {
+      "id": "40861b54-0cf6-81d5-af77-d94983c443a6",
+      "url": "https://app.notion.com/p/40861b540cf681d5af77d94983c443a6?pvs=204",
+      "section": "T28"
+    },
+    "T29": {
+      "id": "40861b54-0cf6-81d5-af77-d94983c443a6",
+      "url": "https://app.notion.com/p/40861b540cf681d5af77d94983c443a6?pvs=204",
+      "section": "T29"
+    },
+    "T30": {
+      "id": "40861b54-0cf6-81d5-af77-d94983c443a6",
+      "url": "https://app.notion.com/p/40861b540cf681d5af77d94983c443a6?pvs=204",
+      "section": "T30"
+    },
+    "T31": {
+      "id": "40861b54-0cf6-81d5-af77-d94983c443a6",
+      "url": "https://app.notion.com/p/40861b540cf681d5af77d94983c443a6?pvs=204",
+      "section": "T31"
+    },
+    "T32": {
+      "id": "40861b54-0cf6-81d5-af77-d94983c443a6",
+      "url": "https://app.notion.com/p/40861b540cf681d5af77d94983c443a6?pvs=204",
+      "section": "T32"
+    },
+    "T33": {
+      "id": "40861b54-0cf6-81d5-af77-d94983c443a6",
+      "url": "https://app.notion.com/p/40861b540cf681d5af77d94983c443a6?pvs=204",
+      "section": "T33"
+    },
+    "T34": {
+      "id": "40861b54-0cf6-81d5-af77-d94983c443a6",
+      "url": "https://app.notion.com/p/40861b540cf681d5af77d94983c443a6?pvs=204",
+      "section": "T34"
+    }
+  },
+  "decision_pages": {
+    "002": {
+      "id": "40761b54-0cf6-8151-b164-e871c27b4b8f",
+      "url": "https://app.notion.com/p/40761b540cf68151b164e871c27b4b8f?pvs=204"
+    }
+  },
+  "last_status_sync": "2026-10-29"
+}

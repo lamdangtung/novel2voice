@@ -1,0 +1,20 @@
+{
+  "passed": true,
+  "book": "a47c4e00-4b5d-4f40-894f-e449582995c1",
+  "jobs": [
+    "8bda0187-352c-5e00-ab36-42da66f54cb6",
+    "8d57d2a0-ef28-5dd2-96a0-3529f382acda",
+    "2a564b6e-5bdf-59b3-b677-b792196acb90"
+  ],
+  "provider_calls": [
+    2,
+    0,
+    2
+  ],
+  "reuse_same_artifact": true,
+  "voice_change_new_artifact": true,
+  "play": true,
+  "download": true,
+  "actual_checkpoint_steps": 14,
+  "js_errors": []
+}

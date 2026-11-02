@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "missing_key_shown": true,
+  "server_fake_key_shown_as_configured": true,
+  "key_not_returned": true,
+  "url_userinfo_query_removed": true,
+  "ordinary_save_preserves_key": true,
+  "no_key_input": true,
+  "no_external_requests": true,
+  "js_errors": []
+}

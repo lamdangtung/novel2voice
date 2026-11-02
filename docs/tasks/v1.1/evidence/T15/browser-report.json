@@ -1,0 +1,14 @@
+{
+  "passed": true,
+  "jobs": [
+    "5544e361-47c0-5d83-b460-3a0e9fbe4c39",
+    "66de16bc-adfc-5dc1-ab5c-bcf60f353005"
+  ],
+  "serial_queue": true,
+  "api_responsive_while_running": true,
+  "continues_during_api_stop": true,
+  "persisted_after_reload": true,
+  "steps": 6,
+  "provider_starts": 6,
+  "js_errors": []
+}

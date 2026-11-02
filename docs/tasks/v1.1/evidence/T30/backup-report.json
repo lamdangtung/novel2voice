@@ -1,0 +1,16 @@
+{
+  "backup": {
+    "destination": "/Users/lamdt/Desktop/novel2voice/.verification/backups/t30-cb39cffb",
+    "files": 18,
+    "status": "verified"
+  },
+  "restore": {
+    "destination": "/Users/lamdt/Desktop/novel2voice/.verification/backups/restored-cb39cffb",
+    "status": "verified",
+    "notice": "Job \u0111ang ch\u1ea1y chuy\u1ec3n interrupted; m\u1edf app v\u00e0 x\u00e1c nh\u1eadn ti\u1ebfp t\u1ee5c."
+  },
+  "book": "0452cd5e-0f93-44c3-a17a-b167bdd775f5",
+  "chapter": "abe3623c-4e7e-4621-bded-2f46abe2b918",
+  "provider": "fake",
+  "source": "/Users/lamdt/Desktop/novel2voice/.verification/workspaces/t30-rich/web"
+}

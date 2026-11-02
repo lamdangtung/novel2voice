@@ -1,0 +1,8 @@
+{
+  "jobs": [
+    ["legacy-a", "input/book-a/1.txt", "output/book-a/1.mp3", "completed", null, "audio-a", "2026-01-01 00:00:00"],
+    ["legacy-b", "input/book-b/1.txt", "output/book-b/1.mp3", "failed", "fixture failure", null, "2026-01-01 00:00:01"]
+  ],
+  "chunks": [["legacy-a", 0, "cache-a", "completed", 1, null], ["legacy-b", 0, "cache-b", "failed", 3, "fixture failure"]],
+  "artifacts": [["cache-a", "audio-a"]]
+}

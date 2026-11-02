@@ -1,0 +1,20 @@
+{
+  "api/__init__.py": "0aed09b15abda67134803c1e1507c838e941108e5872c9a32cf904b3984601b3",
+  "api/settings.py": "5be591fae53906e5a4e645e9d6f32be66d999744a0190d0aceb8879c249aa458",
+  "api/main.py": "d751f7d1ebc17a2b59b4b38fc8a664011712aee60c7d0a4a3b731b86a322b11b",
+  "api/dev.py": "d4ec45d4e02bcf4e22d5870a8a4d2e2f447da457d3df15826e9d3087dbe55804",
+  "api/pyproject.toml": "c312db8a72e8ff30d71a196bfccc91b6151fa47897c7faa14814f7b3be428a7f",
+  "api/uv.lock": "a10a5cf82d86a49b75621158f55f3339e93bef62cf21a4e2371d4c5d21a92e62",
+  "app/index.html": "a54f961bb3a6acb2cdde4c51ca03ee8110fc2f9e4309bec996e9289724aed8d0",
+  "app/vite.config.js": "4991493724cb170ceefe72c3d6f4d723de3d9b42c1e459c7b724bee2cd291a4d",
+  "app/package.json": "37e341deaaa1e29edc65612348d16665b999c05b9c1d90e03887625950a62ac9",
+  "app/pnpm-lock.yaml": "d728e7be03fadcf3df8c35d69c39a8c0842aefc01b7e5ee579ffa416d0266926",
+  "app/pnpm-workspace.yaml": "73c41123ed5e8bf21b1902667fdf9d2d5dff359e2fd4b65a4455636a052e4d50",
+  "app/src/main.js": "5d2f4c0f5d289c2624f3569aea0b5a48e48cb0d22ef5f57a5ba47d64a0ec7969",
+  "app/src/App.vue": "6f05494b0a40f05dc0abfc4278c52859f5a3a09c4938a4d5bf31f98465568813",
+  "app/src/components/ApiConnection.vue": "086edb44c4321bb43aa944c4aee61e8f80b69d37f0e08a5b125c18748bd04ff9",
+  "app/src/composables/useApiHealth.js": "cf2e2634b230c3196830d76040c4e16ced1bad12b79af6e984080add215cd3f5",
+  "app/src/lib/api-client.js": "80e284ed61193b5a8008fd53eed537ec57bd48019ea2e8c648d28ddeb025ed24",
+  "app/src/style.css": "6c7af8b53d4400592d7fa6aa21ea6292216856a65ac98bb6e7e05f7ba993b7f7",
+  "tests/test_web_shell.py": "9602ee75449416ff8a7a6bb7beb2a058e2e7bcaa223d1fe3af2836f8ed787ca4"
+}

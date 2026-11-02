@@ -1,0 +1,20 @@
+{
+  "passed": true,
+  "book": "beedc331-28b9-4b50-804a-7f7eeb74c4a5",
+  "jobs": [
+    "ef680ce2-0fa1-55c3-a1d9-856b6266200f",
+    "a56fd96c-fb77-5125-a74b-6640f7f116b6",
+    "175e838d-2aa9-5f5d-8bfc-b2e1cc57694f",
+    "1bc36804-9ea0-5fa3-afb9-a7decc7f8a9e",
+    "0de25ec5-7028-54b1-ad8b-f6f4cdbe59c8"
+  ],
+  "actual_prompt_glossary_trace": true,
+  "original_bytes_preserved": true,
+  "translation_download": true,
+  "reuse_calls": 0,
+  "retry_whole_chapter_calls": 8,
+  "steps": 8,
+  "stop_resume_restarts_chapter": true,
+  "resume_calls": 8,
+  "js_errors": []
+}

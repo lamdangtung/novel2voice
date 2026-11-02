@@ -1,0 +1,17 @@
+{
+  "api/settings.py": "6ee269264f8cd03456f03d1efdad65c6f9a100d80c585f600c4c11766d9f8754",
+  "api/main.py": "acbfc3962269f672cfa4d02a27abde057580f262ba80d2411bf737e91469e923",
+  "api/dev.py": "eebf869fc516f2d59ea2a2ca20629968f477c42ebc754c5184bcce59859eb43d",
+  "app/vite.config.js": "e8dce9e7a1fdfa0b69ca2cdf5ecf529abcd017edd1dd47b75ab4b701fd9c27c6",
+  "app/src/App.vue": "44e68597cf1c6c6e82aed0d48e0fe8f5ec797c619f80c5d29ca1ff6a0734a5b5",
+  "app/src/components/VerificationWorkspace.vue": "c8c86e5ee64e7c8991a6a8956529d3587458bd4a9a066449aeb5e4e15b8f1d7f",
+  "app/src/lib/verification-client.js": "43503535ed348568c19797f7bc883a2e74c494e2b94f8d5119e819897e594091",
+  "tests/test_verification.py": "7bc17d2baa7a451cc6be346d6277bfd379fac788e270f6236f0931f8926c30fc",
+  "tests/fixtures/t02/manifest.json": "68712b4c43cb33c2ae453949a0fb7932fc3644ef26161a502a7432a7ff648cdb",
+  "api/verification/__init__.py": "e71d5c80daf9fe3d0cbf4a7d37acbf76433fc691a10b8655d84bbe672d60d5b4",
+  "api/verification/__main__.py": "7a4ea389ed98d4d2a8f70c6239e2eeadae367012c020f121af804f3469ae3c5c",
+  "api/verification/providers.py": "340018499e6519ec07a3353a61076b7375bb5ff51b5e00fc1143c126741f2fa9",
+  "api/verification/routes.py": "9ba5c641b3a945494e5fb7556e5c45ac32c81e05b83ce1d90ae63660be47dd42",
+  "api/verification/service.py": "5e2b47cb9bd06517472c9f06aea34fdc2416f64de44e4b564beeb950c6c1fcaf",
+  "api/verification/workspace.py": "ecf25dace7d9d6a2565bc8a61acb637e9becbc6109bc7b70ac65ed24eae3bcf3"
+}

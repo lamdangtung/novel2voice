@@ -1,0 +1,19 @@
+{
+  "passed": true,
+  "book": "90d93e82-943e-446c-b265-f9641437a2f9",
+  "mapping_explicit": true,
+  "invalid_audio_disabled": true,
+  "play": true,
+  "seek": true,
+  "download_exact": true,
+  "range206": true,
+  "rangeStatuses": [
+    206,
+    200,
+    206
+  ],
+  "changed_chapter_stops_previous": true,
+  "txt_update_marks_stale": true,
+  "mobile_no_overflow": true,
+  "js_errors": []
+}

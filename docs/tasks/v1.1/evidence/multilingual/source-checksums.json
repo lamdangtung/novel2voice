@@ -1,0 +1,17 @@
+{
+  "src/languages.py": "4cc1411afce09735cdefbf0493df024f7fa461e8902c857ca5ead445f8695ffd",
+  "src/translator.py": "7108ac3ab9644e89f8b8d4b174168c09851d77ad46939a7e4e9780effd093aa7",
+  "src/translation_contract.py": "0d857b42985bd5a2e2287a6fe5efd8d29c4aae2e677a0945fd155f2ceed5e281",
+  "src/web_translate_bridge.py": "4e1e4303835328c6c2670aa78bee14bd4cc9e329a0f1942f3c0b6dd28c58e39f",
+  "api/books.py": "c41117e578d1cede19a2206e8eb2aaca7957b98f44588388306743dc60f0651b",
+  "api/storage/models.py": "d84773d669013d8ee6cab883dc58d994afde30da8853c8eb1efd315e543d24d6",
+  "api/storage/__init__.py": "06000ae0665046bc116356de499aec08735c878dffe424c0a30491a957349ead",
+  "api/job_plans.py": "57236387c7967931760ad09ac24ef108c8cf2c6e013c31afacadf16d433c8e25",
+  "api/retry_plans.py": "16673866323ec6f1ee97a86d236b6192f029b2b492a6e431cb84f11cef75ad97",
+  "api/web_translation.py": "49f40ac5977262f51c78abf7a12cf9ac24599c31d92f35d42749ba7f30723b27",
+  "app/src/components/BookLibrary.vue": "deea480861a869368b47569fad877bc3b5b94ab4d0aeeede4c0a7a5173d700cb",
+  "app/src/components/JobPlanWizard.vue": "aaad15735abed904eb06b380f04614a1e65b4dd65335b7bce1901739e6bfecc1",
+  "tests/test_multilingual.py": "1ec237c83bd5283bfa207efa95fe13042885dc90743ee3bd06dcfb50ee146d3c",
+  "tests/test_multilingual_translation.py": "4db8807959954f9b18ca5063faa7624d76458d5514982d1939120fe972ecff14",
+  "tests/test_web_shell.py": "3a71dc54cf794465be5dd068eb5f483c9f1a9566bcbc3dadc19686703c635e69"
+}

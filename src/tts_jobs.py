@@ -111,6 +111,21 @@ class JobStore:
                 fcntl.flock(stream, fcntl.LOCK_UN)
 
 
+@contextmanager
+def output_lock(output):
+    """All CLI/web runners reserve the resolved destination, even with different caches."""
+    import fcntl
+    output=Path(output).resolve()
+    output.parent.mkdir(parents=True,exist_ok=True)
+    lock=output.with_name('.'+output.name+'.writer.lock')
+    if lock.is_symlink():raise RuntimeError('Đường dẫn khóa output không an toàn.')
+    with lock.open('a') as stream:
+        try:fcntl.flock(stream,fcntl.LOCK_EX|fcntl.LOCK_NB)
+        except BlockingIOError:raise RuntimeError('Một tiến trình khác đang ghi output này. Chờ hoàn tất rồi chạy lại.')
+        try:yield
+        finally:fcntl.flock(stream,fcntl.LOCK_UN)
+
+
 class TTSJobRunner:
     def __init__(self, provider, merger, chunker, state_dir, concurrency=3, retries=2):
         if concurrency < 1 or retries < 0:
@@ -147,7 +162,7 @@ class TTSJobRunner:
         chunks = self.chunker.chunk_text(text)
         keys = [digest(self.signature + '\n' + chunk) for chunk in chunks]
         job_id = digest(json.dumps([str(source), str(output), keys]))
-        with self.store.lock():
+        with self.store.lock(), output_lock(output):
             previous = self.store.get(job_id)
             if (resume and previous and previous['status'] == 'completed'
                     and self.valid(output) and previous['audio_hash'] == file_digest(output)):
@@ -242,7 +257,7 @@ class TTSJobRunner:
 
     def combine(self, paths, output, resume=True):
         output = Path(output).resolve()
-        with self.store.lock():
+        with self.store.lock(), output_lock(output):
             if not paths or not all(self.valid(path) for path in paths):
                 raise RuntimeError('Không thể ghép tập: thiếu audio chương hợp lệ.')
             identity = [(str(path.resolve()), file_digest(path)) for path in paths]

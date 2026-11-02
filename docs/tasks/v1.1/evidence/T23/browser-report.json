@@ -1,0 +1,14 @@
+{
+  "passed": true,
+  "book": "ea5c703f-fd07-42cc-9dd1-be49d88fb168",
+  "failed_process": "bb150121-3f94-5d00-bdc8-e1e30398541a",
+  "retry_process": "65e63ecb-fd48-57c0-be3a-a95dfb54fdbb",
+  "translator_calls_before": 8,
+  "translator_calls_retry": 0,
+  "same_translation_artifact": true,
+  "tts_calls_retry": 9,
+  "audio_translation_hash_matches": true,
+  "changed_translation_requires_review": true,
+  "play": true,
+  "js_errors": []
+}

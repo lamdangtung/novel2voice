@@ -1,0 +1,24 @@
+{
+  "passed": true,
+  "book": "7e9086bf-91e6-45b6-aad4-4e8bd8ae78ed",
+  "jobs": [
+    "96dc483e-2969-52f4-8702-5d748effae90",
+    "8ec341c8-c3b1-54dc-82ce-6fe07a9ec0bc",
+    "3ac468bd-227b-5131-a52e-e78852d2d1e8",
+    "1ca8f3b3-a9fe-5eb3-87a0-0b40f689c268"
+  ],
+  "order": [
+    1,
+    2,
+    10
+  ],
+  "duration": 6.075102,
+  "input_duration": 6,
+  "provider_calls": 0,
+  "range206": true,
+  "download": true,
+  "source_chapters_unchanged": true,
+  "failure_preserves_previous": true,
+  "force_retry_new_artifact": true,
+  "js_errors": []
+}

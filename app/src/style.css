@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+@theme {
+  --color-canvas: light-dark(#f6f7f9, #11151b);
+  --color-surface: light-dark(#ffffff, #191f28);
+  --color-ink: light-dark(#1d2939, #e9edf4);
+  --color-muted: light-dark(#667488, #a2adbd);
+  --color-line: light-dark(#e5eaf1, #303948);
+  --color-brand: light-dark(#4c5bd8, #a4b1ff);
+  --color-brand-ink: light-dark(#ffffff, #172048);
+  --color-soft: light-dark(#eef1ff, #283151);
+  --color-success: light-dark(#16735a, #82d8ba);
+  --color-success-soft: light-dark(#eaf7f0, #203b32);
+  --color-danger: light-dark(#b44040, #ffaaaa);
+  --color-danger-soft: light-dark(#fff0ee, #422a2a);
+}
+
+@layer base {
+  :root { color-scheme: light dark; }
+  body { @apply m-0 bg-canvas font-sans text-sm leading-normal text-ink antialiased; }
+  button { @apply cursor-pointer; }
+  :focus-visible { @apply outline-2 outline-offset-4 outline-brand; }
+}

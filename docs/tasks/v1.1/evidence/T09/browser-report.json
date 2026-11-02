@@ -1,0 +1,18 @@
+{
+  "passed": true,
+  "book_url": "http://127.0.0.1:8100/#library/11c24095-35e5-4e1a-8449-4e679dcba220",
+  "recursive": true,
+  "identical_skipped": true,
+  "updated_explicitly": true,
+  "download_exact": true,
+  "paged_selection": true,
+  "range_selection": [
+    1,
+    2,
+    10
+  ],
+  "status_filter": true,
+  "mobile_no_overflow": true,
+  "js_errors": [],
+  "external_requests": []
+}

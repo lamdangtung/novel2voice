@@ -1,0 +1,14 @@
+{
+  "passed": true,
+  "book": "7993f1d0-fbc1-4e3f-a9c4-be699dca8fc2",
+  "job": "83b8ef1a-b680-582b-94b6-8a4dc928d3a9",
+  "empty_disabled": true,
+  "preview_no_chapter": true,
+  "cancel_keeps_draft": true,
+  "exact_unicode_newlines_download": true,
+  "reload_persists": true,
+  "explicit_update_no_duplicate": true,
+  "tts_from_direct_text": true,
+  "mobile_no_overflow": true,
+  "js_errors": []
+}

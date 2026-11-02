@@ -1,0 +1,108 @@
+{
+  "workspace": "t02-cli-check",
+  "run_id": "run-0001",
+  "mode": "verification",
+  "status": "passed",
+  "fixture_version": "t02-v1",
+  "source_sha256": "68712b4c43cb33c2ae453949a0fb7932fc3644ef26161a502a7432a7ff648cdb",
+  "tts_calls": 3,
+  "translator_calls": 1,
+  "outputs": [
+    {
+      "file": "A-1.mp3",
+      "chapter_id": "A/1",
+      "valid": true,
+      "duration_seconds": 0.4
+    },
+    {
+      "file": "A-2.mp3",
+      "chapter_id": "A/2",
+      "valid": true,
+      "duration_seconds": 0.4
+    },
+    {
+      "file": "A-en-1.mp3",
+      "chapter_id": "A/en/1",
+      "valid": true,
+      "duration_seconds": 0.4
+    }
+  ],
+  "translation": "[BẢN DỊCH KIỂM THỬ — KHÔNG PHẢI KẾT QUẢ AI]\n\nBình minh lên sau ngọn đồi. Hai người bạn bắt đầu cuộc hành trình.\nDấu vết nguồn: c1575906c183\n",
+  "calls": [
+    {
+      "provider": "fake-tts",
+      "call": 1,
+      "chapter_id": "A/1",
+      "chunk_index": 1,
+      "input_sha256": "de3681923c98eae23ec3fd47c3b260520c138e22f99ce6f6977a3b461aba255d",
+      "status": "started"
+    },
+    {
+      "provider": "fake-tts",
+      "call": 1,
+      "chapter_id": "A/1",
+      "chunk_index": 1,
+      "input_sha256": "de3681923c98eae23ec3fd47c3b260520c138e22f99ce6f6977a3b461aba255d",
+      "status": "completed",
+      "output": "A-1.mp3"
+    },
+    {
+      "provider": "fake-tts",
+      "call": 2,
+      "chapter_id": "A/2",
+      "chunk_index": 1,
+      "input_sha256": "18dd469d65aaf828e4e7dfa5c452a2fad7dd3f2fded100e81adfa1008ecc5fba",
+      "status": "started"
+    },
+    {
+      "provider": "fake-tts",
+      "call": 2,
+      "chapter_id": "A/2",
+      "chunk_index": 1,
+      "input_sha256": "18dd469d65aaf828e4e7dfa5c452a2fad7dd3f2fded100e81adfa1008ecc5fba",
+      "status": "completed",
+      "output": "A-2.mp3"
+    },
+    {
+      "provider": "fake-translator",
+      "call": 1,
+      "chapter_id": "A/en/1",
+      "chunk_index": 1,
+      "input_sha256": "c1575906c1836175cb75716fc2c02c710237bee52693c80b10de333eef95fe62",
+      "status": "started"
+    },
+    {
+      "provider": "fake-translator",
+      "call": 1,
+      "chapter_id": "A/en/1",
+      "chunk_index": 1,
+      "input_sha256": "c1575906c1836175cb75716fc2c02c710237bee52693c80b10de333eef95fe62",
+      "status": "completed"
+    },
+    {
+      "provider": "fake-tts",
+      "call": 3,
+      "chapter_id": "A/en/1",
+      "chunk_index": 1,
+      "input_sha256": "fd4397f4772dc89989e0e514cb3e29aa0ed397b1110df59b2b0c8dcf8e86629d",
+      "status": "started"
+    },
+    {
+      "provider": "fake-tts",
+      "call": 3,
+      "chapter_id": "A/en/1",
+      "chunk_index": 1,
+      "input_sha256": "fd4397f4772dc89989e0e514cb3e29aa0ed397b1110df59b2b0c8dcf8e86629d",
+      "status": "completed",
+      "output": "A-en-1.mp3"
+    }
+  ],
+  "errors": [],
+  "fault_plan": {
+    "provider": "none",
+    "call": 2,
+    "chapter": "",
+    "delay_ms": 0
+  },
+  "notice": "Âm thử 440 Hz, không phải giọng đọc. Bản dịch giả lập, không có API/model thật."
+}

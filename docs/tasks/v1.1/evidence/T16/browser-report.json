@@ -1,0 +1,12 @@
+{
+  "passed": true,
+  "book": "1f953971-a4c1-4e99-ba9d-fec624a53990",
+  "job": "6cd25f5b-106b-5d93-b457-e2bdfdb3bef9",
+  "snapshot_voice": "snapshot-before",
+  "current_voice": "snapshot-after",
+  "immutable_snapshot": true,
+  "repeated_confirm_same_job": true,
+  "changed_source_blocks_confirm": true,
+  "can_preview_again": true,
+  "js_errors": []
+}

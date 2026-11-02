@@ -1,0 +1,21 @@
+{
+  "passed": true,
+  "book_a_url": "http://127.0.0.1:8100/#library/1f1236c2-6f7a-43e9-a3d8-13c3eb17ff40",
+  "created": [
+    "Truyện A 1793203284924",
+    "Story B 1793203284924"
+  ],
+  "edited": true,
+  "persisted_after_restart": true,
+  "import_order": [
+    1,
+    2,
+    10
+  ],
+  "invalid_files_excluded": true,
+  "cancel_creates_no_chapters": true,
+  "isolated_books": true,
+  "mobile_no_overflow": true,
+  "js_errors": [],
+  "external_requests": []
+}

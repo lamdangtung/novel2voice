@@ -1,0 +1,59 @@
+{
+  "provider": "vieneu",
+  "voice": "Hải Đăng",
+  "offline": true,
+  "workspace": "/Users/lamdt/Desktop/novel2voice/.verification/workspaces/t31-real/web",
+  "book": "881afc71-18aa-4b4b-bf10-2789b885f801",
+  "results": [
+    {
+      "job": "9764bbb3-ddb8-53e2-afc0-5324c4770509",
+      "status": "completed",
+      "seconds": 2.91,
+      "report": {
+        "status": "completed",
+        "voice_artifact_id": "40a59446-9057-48e2-9df2-c5a984272dd6",
+        "duration": 3.68,
+        "sha256": "b1499075453b7a2afa0805a3487bf42b1b33c6f876e3c217adc1eaecc2ce42d0",
+        "provider_calls": 1,
+        "reused": false,
+        "steps": 1,
+        "completed_steps": 1,
+        "notice": "Đã tạo mẫu giọng thật; chưa phải đánh giá chất lượng của người dùng."
+      }
+    },
+    {
+      "job": "ffdff7b5-7bd8-5bca-848a-4d4edd4647ea",
+      "status": "completed",
+      "seconds": 2.24,
+      "report": {
+        "status": "completed",
+        "artifact_id": "cd41e4af-56fb-4abb-a03b-15398fa0bdd1",
+        "provider_calls": 1,
+        "reused": false,
+        "steps": 1,
+        "completed_steps": 1,
+        "notice": "Đã tạo và xác minh file audio.",
+        "chapter_id": "da52a591-8cac-4875-9f5a-b895a092d1ec",
+        "number": 1,
+        "action": "create_tts"
+      }
+    },
+    {
+      "job": "c300247d-518d-598e-9678-2ba4f2d8e158",
+      "status": "completed",
+      "seconds": 0.0,
+      "report": {
+        "status": "completed",
+        "artifact_id": "cd41e4af-56fb-4abb-a03b-15398fa0bdd1",
+        "provider_calls": 0,
+        "reused": true,
+        "steps": 1,
+        "completed_steps": 1,
+        "notice": "Tái sử dụng audio; không gọi lại provider.",
+        "chapter_id": "da52a591-8cac-4875-9f5a-b895a092d1ec",
+        "number": 1,
+        "action": "reuse"
+      }
+    }
+  ]
+}

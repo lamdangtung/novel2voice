@@ -1,0 +1,292 @@
+{
+  "v3turbo": {
+    "default_voice": "Hải Đăng",
+    "voices": [
+      {
+        "id": "Adam bựa",
+        "label": "Adam bựa",
+        "description": "Nam · Bắc · Phong cách tự nhiên",
+        "gender": "male",
+        "aliases": []
+      },
+      {
+        "id": "Trúc Ly",
+        "label": "Trúc Ly",
+        "description": "Nữ · Bắc · Phong cách tự nhiên",
+        "gender": "female",
+        "aliases": []
+      },
+      {
+        "id": "Thiện Minh",
+        "label": "Thiện Minh",
+        "description": "Nam · Bắc · Phong cách kể chuyện",
+        "gender": "male",
+        "aliases": [
+          "Anh Khôi"
+        ]
+      },
+      {
+        "id": "Mai Anh",
+        "label": "Mai Anh",
+        "description": "Nữ · Bắc · Phong cách tin tức",
+        "gender": "female",
+        "aliases": []
+      },
+      {
+        "id": "Hải Đăng",
+        "label": "Hải Đăng",
+        "description": "Nam · Bắc · Phong cách tự nhiên",
+        "gender": "male",
+        "aliases": [
+          "Minh Quân Pro",
+          "Minh Quân"
+        ]
+      },
+      {
+        "id": "Thùy Dung",
+        "label": "Thùy Dung",
+        "description": "Nữ · Nam · Phong cách tin tức",
+        "gender": "female",
+        "aliases": []
+      },
+      {
+        "id": "Thiền Tâm Đức",
+        "label": "Thiền Tâm Đức",
+        "description": "Nam · Bắc · Phong cách kể chuyện",
+        "gender": "male",
+        "aliases": []
+      },
+      {
+        "id": "Ngọc Huyền",
+        "label": "Ngọc Huyền",
+        "description": "Nữ · Bắc · Giọng đọc tự nhiên",
+        "gender": "female",
+        "aliases": []
+      },
+      {
+        "id": "Quang Sơn",
+        "label": "Quang Sơn",
+        "description": "Nam · Trung · Phong cách tự nhiên",
+        "gender": "male",
+        "aliases": []
+      },
+      {
+        "id": "Ngọc Trân",
+        "label": "Ngọc Trân",
+        "description": "Nữ · Trung · Phong cách tự nhiên",
+        "gender": "female",
+        "aliases": []
+      },
+      {
+        "id": "Minh Đức",
+        "label": "Minh Đức",
+        "description": "Nam · Bắc · Phong cách tin tức",
+        "gender": "male",
+        "aliases": []
+      },
+      {
+        "id": "Phạm Tuyên",
+        "label": "Phạm Tuyên",
+        "description": "Nam · Bắc · Phong cách tự nhiên",
+        "gender": "male",
+        "aliases": []
+      },
+      {
+        "id": "Thái Sơn",
+        "label": "Thái Sơn",
+        "description": "Nam · Nam · Phong cách kể chuyện",
+        "gender": "male",
+        "aliases": []
+      },
+      {
+        "id": "Xuân Vĩnh",
+        "label": "Xuân Vĩnh",
+        "description": "Nam · Bắc · Phong cách tự nhiên",
+        "gender": "male",
+        "aliases": []
+      },
+      {
+        "id": "Thanh Bình",
+        "label": "Thanh Bình",
+        "description": "Nam · Bắc · Phong cách kể chuyện",
+        "gender": "male",
+        "aliases": []
+      },
+      {
+        "id": "Ngọc Linh",
+        "label": "Ngọc Linh",
+        "description": "Nữ · Bắc · Phong cách kể chuyện",
+        "gender": "female",
+        "aliases": []
+      },
+      {
+        "id": "Đoan Trang",
+        "label": "Đoan Trang",
+        "description": "Nữ · Bắc · Phong cách tự nhiên",
+        "gender": "female",
+        "aliases": []
+      },
+      {
+        "id": "Thục Đoan",
+        "label": "Thục Đoan",
+        "description": "Nữ · Nam · Phong cách kể chuyện",
+        "gender": "female",
+        "aliases": []
+      },
+      {
+        "id": "Minh Triết",
+        "label": "Minh Triết",
+        "description": "Nam · Nam · Phong cách tin tức",
+        "gender": "male",
+        "aliases": []
+      },
+      {
+        "id": "Mỹ Duyên",
+        "label": "Mỹ Duyên",
+        "description": "Nữ · Nam · Phong cách đọc truyện",
+        "gender": "female",
+        "aliases": []
+      },
+      {
+        "id": "Quỳnh Anh",
+        "label": "Quỳnh Anh",
+        "description": "Nữ · Bắc · Phong cách đọc truyện",
+        "gender": "female",
+        "aliases": []
+      },
+      {
+        "id": "Đức Trí",
+        "label": "Đức Trí",
+        "description": "Nam · Nam · Phong cách đọc truyện",
+        "gender": "male",
+        "aliases": []
+      },
+      {
+        "id": "Kim Thanh",
+        "label": "Kim Thanh",
+        "description": "Nữ · Nam · Phong cách đọc truyện",
+        "gender": "female",
+        "aliases": []
+      },
+      {
+        "id": "Adam",
+        "label": "Adam",
+        "description": "Nam · Nam · Giọng đọc tự nhiên",
+        "gender": "male",
+        "aliases": []
+      },
+      {
+        "id": "Quốc Tuấn",
+        "label": "Quốc Tuấn",
+        "description": "Nam · Bắc · Phong cách tự nhiên",
+        "gender": "male",
+        "aliases": [
+          "Mạnh Dũng"
+        ]
+      }
+    ],
+    "source": "vieneu3.8.3/assets/voices_v3_turbo.json",
+    "source_sha256": "e1f13cd2c2e0d29fdab5e15bfd7a30f3d7b768e6132bb43dd2b853f8efefdce9",
+    "runtime_verified": false
+  },
+  "standard": {
+    "default_voice": "Binh",
+    "voices": [
+      {
+        "id": "Binh",
+        "label": "Binh",
+        "description": "Bình (nam miền Bắc)",
+        "gender": null,
+        "aliases": []
+      },
+      {
+        "id": "Tuyen",
+        "label": "Tuyen",
+        "description": "Tuyên (nam miền Bắc)",
+        "gender": null,
+        "aliases": []
+      },
+      {
+        "id": "Vinh",
+        "label": "Vinh",
+        "description": "Vĩnh (nam miền Nam)",
+        "gender": null,
+        "aliases": []
+      },
+      {
+        "id": "Doan",
+        "label": "Doan",
+        "description": "Đoan (nữ miền Nam)",
+        "gender": null,
+        "aliases": []
+      },
+      {
+        "id": "Ly",
+        "label": "Ly",
+        "description": "Ly (nữ miền Bắc)",
+        "gender": null,
+        "aliases": []
+      },
+      {
+        "id": "Ngoc",
+        "label": "Ngoc",
+        "description": "Ngọc (nữ miền Bắc)",
+        "gender": null,
+        "aliases": []
+      }
+    ],
+    "source": "vieneu3.8.3/assets/voices.json",
+    "source_sha256": "670cbe09f926f3a6abc2adcaaf7fa28e857801aa1216c5a55e759720e06737ee",
+    "runtime_verified": false
+  },
+  "fast": {
+    "default_voice": "Binh",
+    "voices": [
+      {
+        "id": "Binh",
+        "label": "Binh",
+        "description": "Bình (nam miền Bắc)",
+        "gender": null,
+        "aliases": []
+      },
+      {
+        "id": "Tuyen",
+        "label": "Tuyen",
+        "description": "Tuyên (nam miền Bắc)",
+        "gender": null,
+        "aliases": []
+      },
+      {
+        "id": "Vinh",
+        "label": "Vinh",
+        "description": "Vĩnh (nam miền Nam)",
+        "gender": null,
+        "aliases": []
+      },
+      {
+        "id": "Doan",
+        "label": "Doan",
+        "description": "Đoan (nữ miền Nam)",
+        "gender": null,
+        "aliases": []
+      },
+      {
+        "id": "Ly",
+        "label": "Ly",
+        "description": "Ly (nữ miền Bắc)",
+        "gender": null,
+        "aliases": []
+      },
+      {
+        "id": "Ngoc",
+        "label": "Ngoc",
+        "description": "Ngọc (nữ miền Bắc)",
+        "gender": null,
+        "aliases": []
+      }
+    ],
+    "source": "vieneu3.8.3/assets/voices.json",
+    "source_sha256": "670cbe09f926f3a6abc2adcaaf7fa28e857801aa1216c5a55e759720e06737ee",
+    "runtime_verified": false
+  }
+}

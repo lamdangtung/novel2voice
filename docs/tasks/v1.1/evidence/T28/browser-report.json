@@ -1,0 +1,15 @@
+{
+  "passed": true,
+  "two_browser_tabs": true,
+  "confirm_statuses": [
+    200,
+    409
+  ],
+  "one_queued": true,
+  "conflict_message": {
+    "error": {
+      "code": "CONFLICT",
+      "message": "Chương đang được công việc 215e78bf-ac89-5945-a83d-4b5831752a95 sử dụng. Chờ hoàn tất hoặc dừng công việc đó rồi thử lại."
+    }
+  }
+}

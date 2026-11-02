@@ -1,0 +1,9 @@
+{
+  "api/chapter_deletion.py": "01ab913aa359088cbde7a0b3ebd3e019aa730990d67e5e5d73fbb4a2dc6f7885",
+  "api/chapters.py": "6303c327911a4f429db05174cd53f3b79c6c884b8dc36ec60135295b5d51eae7",
+  "api/imports.py": "ea8d7ce18ccecaa863c4bc0803da4661bbf81e11236195a4017ec65fcb1a37b3",
+  "api/audio_imports.py": "5bc47efccb42a8585ec9702fe1948e540a3a7014eec473602e118f39d06eab5c",
+  "api/backup.py": "d4987ea5510bfa8108296ceb5413d47da732771af5499607fca8c615444ea9c8",
+  "app/src/components/ChapterTable.vue": "0bad2581ea79533de0fae1598fb4efe185148393d0826720399fc7f5834c5774",
+  "tests/test_chapter_deletion.py": "23cb6f6c796391af0e9bb17ee4d484d11a13df514159f4fa34f33b9ac96cef3f"
+}

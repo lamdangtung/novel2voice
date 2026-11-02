@@ -1,0 +1,14 @@
+{
+  "passed": true,
+  "books": [
+    "176e8dac-bd67-4390-a121-6287a280e875",
+    "37055b18-6b48-4cf2-b594-5fe133dd08a8"
+  ],
+  "field_inheritance": true,
+  "own_voice_preserved": true,
+  "defaults_changed": true,
+  "persisted_after_api_restart": true,
+  "piper_hides_voice": true,
+  "invalid_retry_blocked": true,
+  "js_errors": []
+}

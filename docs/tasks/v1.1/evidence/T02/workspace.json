@@ -1,0 +1,116 @@
+{
+  "name": "t02-cli-check",
+  "path": "/Users/lamdt/Desktop/novel2voice/.verification/workspaces/t02-cli-check",
+  "mode": "verification",
+  "manifest": {
+    "fixture_version": "t02-v1",
+    "source_sha256": "68712b4c43cb33c2ae453949a0fb7932fc3644ef26161a502a7432a7ff648cdb",
+    "books": [
+      {
+        "id": "A",
+        "name": "Truyện kiểm thử A"
+      },
+      {
+        "id": "B",
+        "name": "Truyện kiểm thử B"
+      }
+    ],
+    "files": [
+      {
+        "path": "fixtures/books/A/1_vi.txt",
+        "case": "valid_vi",
+        "sha256": "de3681923c98eae23ec3fd47c3b260520c138e22f99ce6f6977a3b461aba255d"
+      },
+      {
+        "path": "fixtures/books/A/2_vi.txt",
+        "case": "valid_vi",
+        "sha256": "18dd469d65aaf828e4e7dfa5c452a2fad7dd3f2fded100e81adfa1008ecc5fba"
+      },
+      {
+        "path": "fixtures/books/A/ep2/10_vi.txt",
+        "case": "nested_natural_sort",
+        "sha256": "20445168725952dfaeb82f64bb63fefafacec68389c48416d9e1cdb8b08a572c"
+      },
+      {
+        "path": "fixtures/books/B/1_vi.txt",
+        "case": "cross_book_same_number",
+        "sha256": "a63a8ee12984ccd9c58974c767e37cff35bc7f272749ca2f3e09f60f8e48d475"
+      },
+      {
+        "path": "fixtures/books/B/2_vi.txt",
+        "case": "valid_vi",
+        "sha256": "43680180b76118beb98dacae3f542a0dc935d726c5505ba812cb456a8e3acbfb"
+      },
+      {
+        "path": "fixtures/books/B/ep2/10_vi.txt",
+        "case": "nested_natural_sort",
+        "sha256": "1072455ddc3812f2a8608548948711a67642e415fb3fbd6590362fa961bdce32"
+      },
+      {
+        "path": "fixtures/books/A/en/1_en.txt",
+        "case": "valid_en",
+        "sha256": "c1575906c1836175cb75716fc2c02c710237bee52693c80b10de333eef95fe62"
+      },
+      {
+        "path": "fixtures/edge-cases/empty/3_vi.txt",
+        "case": "empty",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "fixtures/edge-cases/invalid-encoding/4_vi.txt",
+        "case": "invalid_utf8",
+        "sha256": "5a741968f40e57485ed6e1a1af381adeb2714223c35acedf1ad0670e42df2eb5"
+      },
+      {
+        "path": "fixtures/edge-cases/duplicate/2_vi.txt",
+        "case": "duplicate_number",
+        "sha256": "7190e523e6b03f4d4ef8155b1bacfb6c1019b8bba9db69268c59f6ee79b294f9"
+      },
+      {
+        "path": "fixtures/edge-cases/changed/2_vi.txt",
+        "case": "changed_content",
+        "sha256": "8d6f08f2ea57ddf1d92d8545db9b5ed8de74c29b9d25d070c8eff8f8f80b15d0"
+      },
+      {
+        "path": "fixtures/edge-cases/unidentified/no-number.txt",
+        "case": "unidentified_number",
+        "sha256": "7877fe2f2e33095535da54961dd363aeca4040d703ce7a95ed6228197700a243"
+      },
+      {
+        "path": "fixtures/glossary.csv",
+        "case": "glossary",
+        "sha256": "57f4bee5ebb9407160cf184c0bdc181071177e90a972c79c4af04c699f313a8c"
+      },
+      {
+        "path": "fixtures/tone.mp3",
+        "case": "tone_not_speech",
+        "sha256": "13c74e3ed3db5b9d64ebd3ee097cbe7159fd8115d11c7020e1c4362583a687cc"
+      },
+      {
+        "path": "fixtures/books/A/audio/1.mp3",
+        "case": "valid_audio",
+        "expected_valid_audio": true,
+        "sha256": "13c74e3ed3db5b9d64ebd3ee097cbe7159fd8115d11c7020e1c4362583a687cc"
+      },
+      {
+        "path": "fixtures/books/B/audio/1.mp3",
+        "case": "cross_book_same_number",
+        "expected_valid_audio": true,
+        "sha256": "13c74e3ed3db5b9d64ebd3ee097cbe7159fd8115d11c7020e1c4362583a687cc"
+      },
+      {
+        "path": "fixtures/edge-cases/ambiguous-audio/1.mp3",
+        "case": "ambiguous_audio_mapping",
+        "expected_valid_audio": true,
+        "sha256": "13c74e3ed3db5b9d64ebd3ee097cbe7159fd8115d11c7020e1c4362583a687cc"
+      },
+      {
+        "path": "fixtures/edge-cases/corrupt-audio/2.mp3",
+        "case": "corrupt_audio",
+        "expected_valid_audio": false,
+        "sha256": "2f23e608514ebf6a431420373814b67924208f9cdda6147da05632fdbd6a52c3"
+      }
+    ]
+  },
+  "latest_report": null
+}

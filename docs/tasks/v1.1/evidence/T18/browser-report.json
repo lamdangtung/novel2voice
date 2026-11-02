@@ -1,0 +1,17 @@
+{
+  "passed": true,
+  "book": "c089f660-fe92-4598-a815-599b98509f20",
+  "continue_job": "10e834c1-b197-51f1-b1ee-bd2c99e8fdc6",
+  "continue_processed": 3,
+  "retry_calls": 2,
+  "failfast_job": "b818f0b4-fb9b-5e80-b24e-e157e97dad77",
+  "failfast_processed": 1,
+  "failfast_remaining": 2,
+  "force_job": "9c102eb2-4f46-5f83-98a3-5f8786570c63",
+  "force_calls": [
+    1,
+    1,
+    1
+  ],
+  "js_errors": []
+}

@@ -1,0 +1,52 @@
+{
+  "status": "passed",
+  "first": {
+    "status": "migrated",
+    "before": {
+      "counts": {
+        "jobs": 2,
+        "chunks": 2,
+        "artifacts": 1
+      },
+      "logical_sha256": "d9556a8f679558d15eff6a26c8df4465bc6146dcadcd60c6bf75ddd1346475fb"
+    },
+    "after": {
+      "counts": {
+        "jobs": 2,
+        "chunks": 2,
+        "artifacts": 1
+      },
+      "logical_sha256": "d9556a8f679558d15eff6a26c8df4465bc6146dcadcd60c6bf75ddd1346475fb"
+    },
+    "backup": "/Users/lamdt/Desktop/novel2voice/.verification/workspaces/t04-audit/migration-0002/upgraded.sqlite3.v1-backup",
+    "backup_sha256": "8fbc3f8d6819d865ea4546bb81bdd5cb6755b7f209c29bb4433f197f91e70e8c",
+    "source_sha256": "a0df20649bdf404a186ba45c6c67cc6e27e5408992d249078c7c6022a93af269",
+    "automatic_audio_mappings": 0
+  },
+  "second": {
+    "status": "already_current",
+    "before": {
+      "counts": {
+        "jobs": 2,
+        "chunks": 2,
+        "artifacts": 1
+      },
+      "logical_sha256": "d9556a8f679558d15eff6a26c8df4465bc6146dcadcd60c6bf75ddd1346475fb"
+    },
+    "after": {
+      "counts": {
+        "jobs": 2,
+        "chunks": 2,
+        "artifacts": 1
+      },
+      "logical_sha256": "d9556a8f679558d15eff6a26c8df4465bc6146dcadcd60c6bf75ddd1346475fb"
+    },
+    "backup": "/Users/lamdt/Desktop/novel2voice/.verification/workspaces/t04-audit/migration-0002/upgraded.sqlite3.v1-backup"
+  },
+  "failure_restored_exactly": true,
+  "source_unchanged": true,
+  "audio_unchanged": true,
+  "automatic_books": 0,
+  "automatic_audio_mappings": 0,
+  "directory": "/Users/lamdt/Desktop/novel2voice/.verification/workspaces/t04-audit/migration-0002"
+}

@@ -1,0 +1,15 @@
+{
+  "passed": true,
+  "translation_download": true,
+  "audio_play": true,
+  "range206": true,
+  "overview": {
+    "books": 1,
+    "chapters": 1,
+    "current_audio": 1,
+    "audio_attention": 0,
+    "merged_saved": 1,
+    "jobs_attention": 0
+  },
+  "js_errors": []
+}

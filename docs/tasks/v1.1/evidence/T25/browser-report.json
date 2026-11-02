@@ -1,0 +1,14 @@
+{
+  "passed": true,
+  "book": "fa1c42bb-bc65-456e-b0c3-031d9f8377ef",
+  "job": "d0645dd7-3c9b-5df2-bf54-ac83ae07255e",
+  "catalog_source_shown": true,
+  "provider_changes_voice_options": true,
+  "preview_impact": true,
+  "sample_play": true,
+  "chapter_count": 0,
+  "merged_count": 0,
+  "invalid_voice422": true,
+  "no_external_requests": true,
+  "js_errors": []
+}

@@ -1,0 +1,19 @@
+[project]
+name = "novel2voice-api"
+version = "1.0.0"
+description = "Local FastAPI service for novel2voice"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "fastapi==0.141.1",
+  "uvicorn==0.53.0",
+  "starlette==1.7.0",
+  "pydantic==2.13.5",
+  "sqlmodel==0.0.48",
+  "python-dotenv==1.2.1",
+]
+
+[dependency-groups]
+dev = ["httpx2==2.13.1"]
+
+[tool.uv]
+package = false

@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "keyboard_create": true,
+  "chapter_focus": true,
+  "escape_return_focus": true,
+  "preview_job": true,
+  "mobile_no_overflow": true,
+  "api_disconnect_recovery": true,
+  "selection_preserved": true,
+  "js_errors": []
+}

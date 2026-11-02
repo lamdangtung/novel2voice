@@ -1,5 +1,36 @@
 # novel2voice 🎙️📖
 
+Phiên bản hiện tại: **v1.0.0**. Xem [roadmap theo phiên bản](roadmap.md) để theo dõi kế hoạch v1.1 → v2.0 và các nhóm task triển khai. Phạm vi web app kế tiếp được mô tả tại [yêu cầu v1.1](docs/v1.1-requirements.md). Bản [UI/UX mock đã review](docs/ui/v1.1/README.md) được lưu làm tài liệu tham chiếu. Xem [task v1.1 và flow nghiệm thu](docs/tasks/v1.1/README.md) để triển khai từng feature. Bản tài liệu trên Notion được ghi tại [Notion reference](docs/notion-reference.md). Các task đã được tạo trên [Linear](docs/linear-reference.md), cùng milestone v1.1.
+
+
+## Web app v1.1 đang triển khai
+
+T01–T03 đã được chấp nhận; T04–T33 đã nghiệm thu kỹ thuật tự động, gồm VieNeu thật và cài mới. T34 đang tổng kiểm tra; chưa phát hành v1.1. Xem [hướng dẫn web app](docs/v1.1-user-guide.md). Chất lượng giọng và dịch API thật còn cần nghiệm thu riêng.
+
+```bash
+uv sync --project api --frozen
+pnpm --dir app install --frozen-lockfile
+uv run --project api --frozen python -m api.dev --verification
+```
+
+Mở **http://127.0.0.1:8000**. Đã có thư viện/tạo sửa truyện, import TXT preview/confirm và thư mục, cập nhật có giữ bản cũ, bảng chương/tìm/chọn/xem/tải, cấu hình kế thừa/glossary, import và nghe MP3, queue/worker, TTS checkpoint qua web, batch/dừng/tiếp tục/phục hồi/retry và kiểm tra môi trường/key. Chế độ `--verification` dùng provider giả lập, âm tone và vùng `.verification/web`; workspace fixture T02 ở `.verification/workspaces`. Bỏ flag dùng vùng local `.novel2voice` và provider thật khi người dùng xác nhận action. Không dùng kho CLI input/output làm database web.
+
+Launcher quản lý app/API/worker riêng. `api stop` / `api start` chỉ dừng/bật API, worker tiếp tục; `quit` hoặc Ctrl+C dừng các process do launcher tạo. Sau khi cập nhật code API, restart launcher để có route mới. Không dừng launcher khác của người dùng để chạy QA.
+
+Xem [task và flow nghiệm thu](docs/tasks/v1.1/README.md), từng evidence Txx và [Notion reference](docs/notion-reference.md). Các lệnh CLI bên dưới vẫn giữ tương thích. Database version/checkpoint v1.0 có công cụ migrate-copy trên fixture, không tự nâng cấp DB thật.
+
+Stack web: **Vue 3 + Vite + Tailwind CSS / FastAPI / SQLite + SQLModel**, quản lý bằng **pnpm + uv**. Từ root project, cài lần đầu:
+
+```bash
+pnpm --dir app install --frozen-lockfile
+uv sync --project api --frozen
+```
+
+Cần Node 22.12+, pnpm và uv; API dùng Python 3.12. Swagger UI: **http://127.0.0.1:8001/docs**. uv dùng môi trường riêng `api/.venv`, giữ nguyên `.venv` CLI/TTS. Schema SQLite/SQLModel version3 đã có backup trước nâng cấp.
+
+Xem [hướng dẫn nghiệm thu T01](docs/tasks/v1.1/evidence/T01.md) và [quyết định stack mới](docs/decisions/002-vue-fastapi-sqlmodel.md). Nếu app cũ đang chạy, dừng launcher cũ rồi chạy lệnh mới; không mở hai launcher trên cùng cổng.
+
+
 Tool tự động hóa quy trình sản xuất truyện Audio (Audiobook):
 1. **Dịch thuật tiểu thuyết (EN -> VI)** bằng AI (OpenAI GPT-4o, GPT-4o-mini hoặc các model tương thích) với văn phong trau chuốt, giữ sắc thái hội thoại và hỗ trợ từ điển thuật ngữ / nhân vật (`glossary.csv`).
 2. **Chuyển văn bản thành giọng đọc (Text-to-Speech)** chất lượng cao với **Edge-TTS** (miễn phí, giọng tiếng Việt tự nhiên) hoặc **OpenAI TTS**.
@@ -191,7 +222,9 @@ python -m src.main tts input/ --provider vieneu --retries 0 --fail-fast
 ### Kiểm thử
 
 ```bash
-python -m unittest discover -s tests -v
+python -m unittest discover -s tests -p 'test_tts_jobs.py' -v
 ```
 
 Bộ kiểm thử dùng TTS giả và FFmpeg/ffprobe thật để kiểm tra resume, retry, ngắt giữa chừng, đổi nội dung/giọng, audio hỏng, lỗi ghép và xử lý batch. Không tải model hoặc gọi dịch vụ TTS.
+
+Ngôn ngữ nguồn: tạo/sửa truyện hỗ trợ22ngôn ngữ, dịch/process theo ngôn ngữ gốc sangVI. Schema3 nâng cấp từ1/2 có backup. Xem [bằng chứng đa ngôn ngữ](docs/tasks/v1.1/evidence/multilingual.md). Restart launcher sau cập nhật API.

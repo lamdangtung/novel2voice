@@ -1,0 +1,12 @@
+{
+  "src/doctor.py": "d1aca620c8d08ebac753c6a2b2ed16374f0165dce37d05910371340e977c7223",
+  "src/main.py": "b87442e052a65626cbf5615c0ea7dd75f57a37a83b0407d13878dd2304f34197",
+  "api/main.py": "92b42ee286ea18f1f0e19698ed0fb289d149c1d0ac755135d887217165ce4578",
+  "api/environment.py": "f0475449aed15f12644ee2652b92335a1573f31369d8f5130519a2158f959ba8",
+  "api/pyproject.toml": "c90ddf5145e13e282a6af99530a50f85a3666ffd8eb8b114f743926718f62a5f",
+  "api/uv.lock": "922fd8ee8ea5d066e24e0613ea30112d0ba4ad6c533e53535176faa19aa3243f",
+  "app/src/App.vue": "202b35be6c6dfa3f693de19079486425fe504727d91dc3bcbeb65b3d5331e09e",
+  "app/src/components/EnvironmentDoctor.vue": "2f7be7192b5985c2f1a2f0e880fba45eef523ee43d3fc83698afd9966aae8b87",
+  "tests/test_doctor.py": "61df77d72060e19c886153abca4c60385ff8761439f00e143257127d28a1eb38",
+  "tests/fixtures/t03/scenarios.json": "b0dc2a123800f3363fd58bafd588e2861908c135e49c96e9e6bbee9b4a7d0057"
+}

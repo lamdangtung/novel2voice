@@ -5,6 +5,7 @@ from openai import OpenAI
 from src.glossary import Glossary
 from src.text_chunker import TextChunker
 from src import config
+from src.languages import source_prompt,validate_language
 
 
 SYSTEM_TRANSLATE_PROMPT = """Bạn là một dịch giả tiểu thuyết chuyên nghiệp có văn phong điêu luyện và tinh tế.
@@ -27,8 +28,10 @@ class NovelTranslator:
         api_key: Optional[str] = None,
         base_url: Optional[str] = None,
         model: Optional[str] = None,
-        glossary: Optional[Glossary] = None
+        glossary: Optional[Glossary] = None,
+        source_language: str = 'en'
     ):
+        self.source_language=validate_language(source_language)
         self.api_key = api_key or config.OPENAI_API_KEY
         self.base_url = base_url or config.OPENAI_BASE_URL
         self.model = model or config.TRANSLATION_MODEL
@@ -56,7 +59,7 @@ class NovelTranslator:
             )
 
     def _build_system_prompt(self) -> str:
-        prompt = SYSTEM_TRANSLATE_PROMPT
+        prompt = source_prompt(SYSTEM_TRANSLATE_PROMPT,self.source_language)
         glossary_prompt = self.glossary.to_prompt_instruction()
         if glossary_prompt:
             prompt += f"\n\n{glossary_prompt}"

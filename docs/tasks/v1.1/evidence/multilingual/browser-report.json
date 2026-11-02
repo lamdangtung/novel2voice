@@ -1,0 +1,12 @@
+{
+  "passed": true,
+  "languages": 22,
+  "create_chinese": true,
+  "library_correct_label": true,
+  "edit_japanese_reload": true,
+  "chinese_process_job": "6419275a-a56e-5b3d-94df-d0f4557eaa5f",
+  "source_language_snapshot": "zh",
+  "verification_only": true,
+  "mobile_no_overflow": true,
+  "js_errors": []
+}

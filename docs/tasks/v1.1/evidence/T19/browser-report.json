@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "book": "c089f660-fe92-4598-a815-599b98509f20",
+  "job": "0b711e36-a64f-5f62-936d-21b9f6f298a0",
+  "stopped_completed_steps": 5,
+  "total_steps": 16,
+  "resume_calls": 11,
+  "same_job": true,
+  "checkpoint_prefix_reused": true,
+  "js_errors": []
+}

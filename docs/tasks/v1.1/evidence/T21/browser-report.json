@@ -1,0 +1,14 @@
+{
+  "passed": true,
+  "book": "eef39447-0282-4e2a-aeb4-35cf3af58b19",
+  "failed_job": "8d61a1a0-ce28-56bb-8a86-50d3f4531ef2",
+  "retry_job": "0e88a642-fa9e-5614-ad12-52d2dc6ec5f4",
+  "retry_calls": 11,
+  "total_steps": 12,
+  "cached_prefix_preserved": true,
+  "repair_job": "26985b17-72b2-5f3d-ba31-b7420d6d1c37",
+  "repair_calls": 1,
+  "only_invalid_chunk_regenerated": true,
+  "old_report_preserved": true,
+  "js_errors": []
+}

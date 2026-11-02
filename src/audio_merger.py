@@ -80,8 +80,19 @@ class AudioMerger:
                 text=True
             )
 
-            # Nếu copy stream lỗi do thông số audio không đồng nhất, fallback sang re-encode
-            if result.returncode != 0:
+            # MP3 encoder delay/padding can accumulate at concat boundaries even
+            # when stream-copy exits successfully. Decode/re-encode in that case
+            # rather than publish an output rejected by the checkpoint validator.
+            duration_mismatch = False
+            if result.returncode == 0:
+                durations = {path: self.get_duration(path) for path in set(audio_files)}
+                actual = self.get_duration(output_file)
+                if actual is None or any(value is None for value in durations.values()):
+                    duration_mismatch = True
+                else:
+                    expected = sum(durations[path] for path in audio_files)
+                    duration_mismatch = abs(actual - expected) > max(1.0, expected * 0.02)
+            if result.returncode != 0 or duration_mismatch:
                 cmd_reencode = [
                     self.ffmpeg_path,
                     "-y",

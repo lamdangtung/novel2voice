@@ -1,0 +1,13 @@
+{
+  "passed": true,
+  "book": "fa4ef3b3-cc64-40e3-801a-412fb42ac5aa",
+  "job": "8a5ec7e8-9348-5bc7-bedc-8c590cb7df21",
+  "owned_worker_killed": true,
+  "whole_launcher_restarted": true,
+  "interrupted_steps": 5,
+  "total_steps": 16,
+  "resume_calls": 11,
+  "explicit_resume": true,
+  "checkpoint_reused": true,
+  "js_errors": []
+}

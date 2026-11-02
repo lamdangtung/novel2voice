@@ -1,0 +1,944 @@
+{
+  "created_at": "2026-10-28",
+  "sync_mode": "manual",
+  "team": {
+    "id": "39e81641-0720-4ce3-8e43-9c86510fc429",
+    "key": "LAM",
+    "name": "Lamdangtung"
+  },
+  "project": {
+    "id": "P-LAM-1",
+    "uuid": "be2c471f-e18b-479f-a6af-e63493d1ebee",
+    "name": "novel2voice",
+    "url": "https://linear.app/lamdangtung/project/novel2voice-272fc4365cf7"
+  },
+  "milestone": {
+    "id": "5247342a-3913-4a2a-8577-ba327fc94efa",
+    "name": "v1.1"
+  },
+  "audit": {
+    "issues": 34,
+    "relations_checked": 34,
+    "dependency_links": 111,
+    "milestone": "v1.1",
+    "status": "Backlog"
+  },
+  "issues": [
+    {
+      "task_id": "T01",
+      "id": "LAM-5",
+      "uuid": "9f120785-043e-4bc5-bfd9-b31e839d5fab",
+      "title": "[T01] Khởi động app và API local",
+      "url": "https://linear.app/lamdangtung/issue/LAM-5/t01-khoi-djong-app-va-api-local",
+      "status_at_import": "Backlog",
+      "blocked_by": [],
+      "last_known_status": "Done",
+      "verification": "user_accepted",
+      "evidence": "docs/tasks/v1.1/evidence/T01.md"
+    },
+    {
+      "task_id": "T02",
+      "id": "LAM-6",
+      "uuid": "b53133d2-f3e9-4a33-84a7-95ef30a807d3",
+      "title": "[T02] Bộ dữ liệu và chế độ nghiệm thu lặp lại",
+      "url": "https://linear.app/lamdangtung/issue/LAM-6/t02-bo-du-lieu-va-che-djo-nghiem-thu-lap-lai",
+      "status_at_import": "Backlog",
+      "blocked_by": [
+        {
+          "task_id": "T01",
+          "issue": "LAM-5"
+        }
+      ],
+      "last_known_status": "Done",
+      "verification": "user_accepted",
+      "evidence": "docs/tasks/v1.1/evidence/T02.md"
+    },
+    {
+      "task_id": "T03",
+      "id": "LAM-7",
+      "uuid": "ecd11155-429b-4356-bf23-b16728546735",
+      "title": "[T03] Kiểm tra môi trường trên web",
+      "url": "https://linear.app/lamdangtung/issue/LAM-7/t03-kiem-tra-moi-truong-tren-web",
+      "status_at_import": "Backlog",
+      "blocked_by": [
+        {
+          "task_id": "T01",
+          "issue": "LAM-5"
+        },
+        {
+          "task_id": "T02",
+          "issue": "LAM-6"
+        }
+      ],
+      "last_known_status": "Done",
+      "verification": "user_accepted",
+      "evidence": "docs/tasks/v1.1/evidence/T03.md"
+    },
+    {
+      "task_id": "T04",
+      "id": "LAM-8",
+      "uuid": "28abe075-1b40-4a77-8c46-6812e877edae",
+      "title": "[T04] Schema dữ liệu và nâng cấp checkpoint v1.0",
+      "url": "https://linear.app/lamdangtung/issue/LAM-8/t04-schema-du-lieu-va-nang-cap-checkpoint-v10",
+      "status_at_import": "Backlog",
+      "blocked_by": [
+        {
+          "task_id": "T02",
+          "issue": "LAM-6"
+        }
+      ],
+      "last_known_status": "Done",
+      "verification": "agent_verified",
+      "evidence": "docs/tasks/v1.1/evidence/T04.md",
+      "last_verified_at": "2026-10-29"
+    },
+    {
+      "task_id": "T05",
+      "id": "LAM-9",
+      "uuid": "7781378d-fde9-4863-8553-915105b95bc3",
+      "title": "[T05] Tạo, xem và sửa bộ truyện",
+      "url": "https://linear.app/lamdangtung/issue/LAM-9/t05-tao-xem-va-sua-bo-truyen",
+      "status_at_import": "Backlog",
+      "blocked_by": [
+        {
+          "task_id": "T01",
+          "issue": "LAM-5"
+        },
+        {
+          "task_id": "T04",
+          "issue": "LAM-8"
+        }
+      ],
+      "last_known_status": "Done",
+      "verification": "agent_verified",
+      "evidence": "docs/tasks/v1.1/evidence/T05.md",
+      "last_verified_at": "2026-10-29"
+    },
+    {
+      "task_id": "T06",
+      "id": "LAM-10",
+      "uuid": "234a604c-d117-4c79-9679-5cb8de0092d7",
+      "title": "[T06] Upload TXT với xem trước và xác nhận",
+      "url": "https://linear.app/lamdangtung/issue/LAM-10/t06-upload-txt-voi-xem-truoc-va-xac-nhan",
+      "status_at_import": "Backlog",
+      "blocked_by": [
+        {
+          "task_id": "T02",
+          "issue": "LAM-6"
+        },
+        {
+          "task_id": "T05",
+          "issue": "LAM-9"
+        }
+      ],
+      "last_known_status": "Done",
+      "verification": "agent_verified",
+      "evidence": "docs/tasks/v1.1/evidence/T06.md",
+      "last_verified_at": "2026-10-29"
+    },
+    {
+      "task_id": "T07",
+      "id": "LAM-11",
+      "uuid": "2d5c1101-b0db-4084-995a-a4c16992d079",
+      "title": "[T07] Nhập thư mục local và thư mục con",
+      "url": "https://linear.app/lamdangtung/issue/LAM-11/t07-nhap-thu-muc-local-va-thu-muc-con",
+      "status_at_import": "Backlog",
+      "blocked_by": [
+        {
+          "task_id": "T06",
+          "issue": "LAM-10"
+        }
+      ],
+      "last_known_status": "Done",
+      "verification": "agent_verified",
+      "evidence": "docs/tasks/v1.1/evidence/T07.md",
+      "last_verified_at": "2026-10-29"
+    },
+    {
+      "task_id": "T08",
+      "id": "LAM-12",
+      "uuid": "386e65f8-5108-4adb-a590-7f1a4a5e5a85",
+      "title": "[T08] Xử lý trùng và cập nhật TXT đã nhập",
+      "url": "https://linear.app/lamdangtung/issue/LAM-12/t08-xu-ly-trung-va-cap-nhat-txt-dja-nhap",
+      "status_at_import": "Backlog",
+      "blocked_by": [
+        {
+          "task_id": "T06",
+          "issue": "LAM-10"
+        },
+        {
+          "task_id": "T07",
+          "issue": "LAM-11"
+        }
+      ],
+      "last_known_status": "Done",
+      "verification": "agent_verified",
+      "evidence": "docs/tasks/v1.1/evidence/T08.md",
+      "last_verified_at": "2026-10-29"
+    },
+    {
+      "task_id": "T09",
+      "id": "LAM-13",
+      "uuid": "c6e4a213-f8f4-409e-b1dd-ea03b9761c71",
+      "title": "[T09] Bảng chương, tìm/lọc và chọn phạm vi",
+      "url": "https://linear.app/lamdangtung/issue/LAM-13/t09-bang-chuong-timloc-va-chon-pham-vi",
+      "status_at_import": "Backlog",
+      "blocked_by": [
+        {
+          "task_id": "T06",
+          "issue": "LAM-10"
+        }
+      ],
+      "last_known_status": "Done",
+      "verification": "agent_verified",
+      "evidence": "docs/tasks/v1.1/evidence/T09.md",
+      "last_verified_at": "2026-10-29"
+    },
+    {
+      "task_id": "T10",
+      "id": "LAM-14",
+      "uuid": "fecdbc56-47d5-4292-aab7-ff038b033394",
+      "title": "[T10] Xem và tải nội dung chương",
+      "url": "https://linear.app/lamdangtung/issue/LAM-14/t10-xem-va-tai-noi-dung-chuong",
+      "status_at_import": "Backlog",
+      "blocked_by": [
+        {
+          "task_id": "T09",
+          "issue": "LAM-13"
+        }
+      ],
+      "last_known_status": "Done",
+      "verification": "agent_verified",
+      "evidence": "docs/tasks/v1.1/evidence/T10.md",
+      "last_verified_at": "2026-10-29"
+    },
+    {
+      "task_id": "T11",
+      "id": "LAM-15",
+      "uuid": "479ee618-69f7-4213-a3fd-ec60bff9f925",
+      "title": "[T11] Lưu cấu hình workspace và riêng từng truyện",
+      "url": "https://linear.app/lamdangtung/issue/LAM-15/t11-luu-cau-hinh-workspace-va-rieng-tung-truyen",
+      "status_at_import": "Backlog",
+      "blocked_by": [
+        {
+          "task_id": "T03",
+          "issue": "LAM-7"
+        },
+        {
+          "task_id": "T05",
+          "issue": "LAM-9"
+        }
+      ],
+      "last_known_status": "Done",
+      "verification": "agent_verified",
+      "evidence": "docs/tasks/v1.1/evidence/T11.md",
+      "last_verified_at": "2026-10-29"
+    },
+    {
+      "task_id": "T12",
+      "id": "LAM-16",
+      "uuid": "4f582f7c-d87a-44ce-adef-afa55feafff9",
+      "title": "[T12] Glossary riêng cho truyện",
+      "url": "https://linear.app/lamdangtung/issue/LAM-16/t12-glossary-rieng-cho-truyen",
+      "status_at_import": "Backlog",
+      "blocked_by": [
+        {
+          "task_id": "T06",
+          "issue": "LAM-10"
+        },
+        {
+          "task_id": "T11",
+          "issue": "LAM-15"
+        }
+      ],
+      "last_known_status": "Done",
+      "verification": "agent_verified",
+      "evidence": "docs/tasks/v1.1/evidence/T12.md",
+      "last_verified_at": "2026-10-29"
+    },
+    {
+      "task_id": "T13",
+      "id": "LAM-17",
+      "uuid": "e995b049-aaa1-4aec-902b-91d8363f0b8c",
+      "title": "[T13] Import MP3 cũ và xác nhận ánh xạ",
+      "url": "https://linear.app/lamdangtung/issue/LAM-17/t13-import-mp3-cu-va-xac-nhan-anh-xa",
+      "status_at_import": "Backlog",
+      "blocked_by": [
+        {
+          "task_id": "T08",
+          "issue": "LAM-12"
+        },
+        {
+          "task_id": "T10",
+          "issue": "LAM-14"
+        }
+      ],
+      "last_known_status": "Done",
+      "verification": "agent_verified",
+      "evidence": "docs/tasks/v1.1/evidence/T13.md",
+      "last_verified_at": "2026-10-29"
+    },
+    {
+      "task_id": "T14",
+      "id": "LAM-18",
+      "uuid": "17f9a63e-d78b-4351-81cb-b6c76f5fe1f2",
+      "title": "[T14] Nghe, tua và tải audio",
+      "url": "https://linear.app/lamdangtung/issue/LAM-18/t14-nghe-tua-va-tai-audio",
+      "status_at_import": "Backlog",
+      "blocked_by": [
+        {
+          "task_id": "T13",
+          "issue": "LAM-17"
+        }
+      ],
+      "last_known_status": "Done",
+      "verification": "agent_verified",
+      "evidence": "docs/tasks/v1.1/evidence/T14.md",
+      "last_verified_at": "2026-10-29"
+    },
+    {
+      "task_id": "T15",
+      "id": "LAM-20",
+      "uuid": "72a6662c-e206-40d1-9c2f-42ec99a0406b",
+      "title": "[T15] Job nền tối thiểu có UI theo dõi",
+      "url": "https://linear.app/lamdangtung/issue/LAM-20/t15-job-nen-toi-thieu-co-ui-theo-doi",
+      "status_at_import": "Backlog",
+      "blocked_by": [
+        {
+          "task_id": "T02",
+          "issue": "LAM-6"
+        },
+        {
+          "task_id": "T04",
+          "issue": "LAM-8"
+        },
+        {
+          "task_id": "T05",
+          "issue": "LAM-9"
+        }
+      ],
+      "last_known_status": "Done",
+      "verification": "agent_verified",
+      "evidence": "docs/tasks/v1.1/evidence/T15.md",
+      "last_verified_at": "2026-10-29"
+    },
+    {
+      "task_id": "T16",
+      "id": "LAM-21",
+      "uuid": "8f65d960-609e-4005-9f49-c82abb83c524",
+      "title": "[T16] Xem trước tác vụ và chốt cấu hình",
+      "url": "https://linear.app/lamdangtung/issue/LAM-21/t16-xem-truoc-tac-vu-va-chot-cau-hinh",
+      "status_at_import": "Backlog",
+      "blocked_by": [
+        {
+          "task_id": "T09",
+          "issue": "LAM-13"
+        },
+        {
+          "task_id": "T11",
+          "issue": "LAM-15"
+        },
+        {
+          "task_id": "T15",
+          "issue": "LAM-20"
+        }
+      ],
+      "last_known_status": "Done",
+      "verification": "agent_verified",
+      "evidence": "docs/tasks/v1.1/evidence/T16.md",
+      "last_verified_at": "2026-10-29"
+    },
+    {
+      "task_id": "T17",
+      "id": "LAM-22",
+      "uuid": "45b2b443-8591-4f6a-b14e-dd9d83d8ffe5",
+      "title": "[T17] Tạo audio cho một chương tiếng Việt",
+      "url": "https://linear.app/lamdangtung/issue/LAM-22/t17-tao-audio-cho-mot-chuong-tieng-viet",
+      "status_at_import": "Backlog",
+      "blocked_by": [
+        {
+          "task_id": "T10",
+          "issue": "LAM-14"
+        },
+        {
+          "task_id": "T14",
+          "issue": "LAM-18"
+        },
+        {
+          "task_id": "T16",
+          "issue": "LAM-21"
+        }
+      ],
+      "last_known_status": "Done",
+      "verification": "agent_verified",
+      "evidence": "docs/tasks/v1.1/evidence/T17.md",
+      "last_verified_at": "2026-10-29"
+    },
+    {
+      "task_id": "T18",
+      "id": "LAM-23",
+      "uuid": "20f5dd1e-f61d-488d-a70a-0b6a995fb232",
+      "title": "[T18] TTS batch và các chính sách xử lý",
+      "url": "https://linear.app/lamdangtung/issue/LAM-23/t18-tts-batch-va-cac-chinh-sach-xu-ly",
+      "status_at_import": "Backlog",
+      "blocked_by": [
+        {
+          "task_id": "T17",
+          "issue": "LAM-22"
+        }
+      ],
+      "last_known_status": "Done",
+      "verification": "agent_verified",
+      "evidence": "docs/tasks/v1.1/evidence/T18.md",
+      "last_verified_at": "2026-10-29"
+    },
+    {
+      "task_id": "T19",
+      "id": "LAM-24",
+      "uuid": "9696dbeb-bb04-4644-bff5-58dbcef5ee42",
+      "title": "[T19] Dừng an toàn và tiếp tục job",
+      "url": "https://linear.app/lamdangtung/issue/LAM-24/t19-dung-an-toan-va-tiep-tuc-job",
+      "status_at_import": "Backlog",
+      "blocked_by": [
+        {
+          "task_id": "T18",
+          "issue": "LAM-23"
+        }
+      ],
+      "last_known_status": "Done",
+      "verification": "agent_verified",
+      "evidence": "docs/tasks/v1.1/evidence/T19.md",
+      "last_verified_at": "2026-10-29"
+    },
+    {
+      "task_id": "T20",
+      "id": "LAM-25",
+      "uuid": "811b9513-6774-4556-b74a-bf6a6c080221",
+      "title": "[T20] Phục hồi khi worker/API bị tắt đột ngột",
+      "url": "https://linear.app/lamdangtung/issue/LAM-25/t20-phuc-hoi-khi-workerapi-bi-tat-djot-ngot",
+      "status_at_import": "Backlog",
+      "blocked_by": [
+        {
+          "task_id": "T19",
+          "issue": "LAM-24"
+        }
+      ],
+      "last_known_status": "Done",
+      "verification": "agent_verified",
+      "evidence": "docs/tasks/v1.1/evidence/T20.md",
+      "last_verified_at": "2026-10-29"
+    },
+    {
+      "task_id": "T21",
+      "id": "LAM-26",
+      "uuid": "73fe5696-1b24-40b9-9230-a91053680462",
+      "title": "[T21] Retry đoạn lỗi và phục hồi audio hỏng",
+      "url": "https://linear.app/lamdangtung/issue/LAM-26/t21-retry-djoan-loi-va-phuc-hoi-audio-hong",
+      "status_at_import": "Backlog",
+      "blocked_by": [
+        {
+          "task_id": "T18",
+          "issue": "LAM-23"
+        },
+        {
+          "task_id": "T20",
+          "issue": "LAM-25"
+        }
+      ],
+      "last_known_status": "Done",
+      "verification": "agent_verified",
+      "evidence": "docs/tasks/v1.1/evidence/T21.md",
+      "last_verified_at": "2026-10-29"
+    },
+    {
+      "task_id": "T22",
+      "id": "LAM-27",
+      "uuid": "33a5d854-30dc-4497-99b5-048febc8f05d",
+      "title": "[T22] Dịch EN → VI trên web",
+      "url": "https://linear.app/lamdangtung/issue/LAM-27/t22-dich-en-vi-tren-web",
+      "status_at_import": "Backlog",
+      "blocked_by": [
+        {
+          "task_id": "T10",
+          "issue": "LAM-14"
+        },
+        {
+          "task_id": "T12",
+          "issue": "LAM-16"
+        },
+        {
+          "task_id": "T16",
+          "issue": "LAM-21"
+        },
+        {
+          "task_id": "T19",
+          "issue": "LAM-24"
+        },
+        {
+          "task_id": "T26",
+          "issue": "LAM-19"
+        }
+      ],
+      "last_known_status": "Done",
+      "verification": "agent_verified",
+      "last_verified_at": "2026-10-29",
+      "evidence": "docs/tasks/v1.1/evidence/T22.md"
+    },
+    {
+      "task_id": "T23",
+      "id": "LAM-28",
+      "uuid": "08e7abfd-9c96-43de-b700-d717a81c39c0",
+      "title": "[T23] Dịch rồi tạo audio, tiếp tục đúng bước",
+      "url": "https://linear.app/lamdangtung/issue/LAM-28/t23-dich-roi-tao-audio-tiep-tuc-djung-buoc",
+      "status_at_import": "Backlog",
+      "blocked_by": [
+        {
+          "task_id": "T17",
+          "issue": "LAM-22"
+        },
+        {
+          "task_id": "T21",
+          "issue": "LAM-26"
+        },
+        {
+          "task_id": "T22",
+          "issue": "LAM-27"
+        }
+      ],
+      "last_known_status": "Done",
+      "verification": "agent_verified",
+      "last_verified_at": "2026-10-29",
+      "evidence": "docs/tasks/v1.1/evidence/T23.md"
+    },
+    {
+      "task_id": "T24",
+      "id": "LAM-29",
+      "uuid": "60684956-b074-40b9-85bc-49acffea6ed1",
+      "title": "[T24] Ghép audio chương thành file chung",
+      "url": "https://linear.app/lamdangtung/issue/LAM-29/t24-ghep-audio-chuong-thanh-file-chung",
+      "status_at_import": "Backlog",
+      "blocked_by": [
+        {
+          "task_id": "T14",
+          "issue": "LAM-18"
+        },
+        {
+          "task_id": "T16",
+          "issue": "LAM-21"
+        },
+        {
+          "task_id": "T18",
+          "issue": "LAM-23"
+        }
+      ],
+      "last_known_status": "Done",
+      "verification": "agent_verified",
+      "last_verified_at": "2026-10-29",
+      "evidence": "docs/tasks/v1.1/evidence/T24.md"
+    },
+    {
+      "task_id": "T25",
+      "id": "LAM-30",
+      "uuid": "66771d8b-bff5-4ecc-95ee-bdab58c7799b",
+      "title": "[T25] Danh sách giọng và thử giọng ngắn",
+      "url": "https://linear.app/lamdangtung/issue/LAM-30/t25-danh-sach-giong-va-thu-giong-ngan",
+      "status_at_import": "Backlog",
+      "blocked_by": [
+        {
+          "task_id": "T03",
+          "issue": "LAM-7"
+        },
+        {
+          "task_id": "T11",
+          "issue": "LAM-15"
+        },
+        {
+          "task_id": "T17",
+          "issue": "LAM-22"
+        },
+        {
+          "task_id": "T26",
+          "issue": "LAM-19"
+        }
+      ],
+      "last_known_status": "Done",
+      "verification": "agent_verified",
+      "last_verified_at": "2026-10-29",
+      "evidence": "docs/tasks/v1.1/evidence/T25.md"
+    },
+    {
+      "task_id": "T26",
+      "id": "LAM-19",
+      "uuid": "fcfe5f75-db05-41c7-aa59-156e985b7a49",
+      "title": "[T26] Trạng thái key và cấu hình kết nối an toàn",
+      "url": "https://linear.app/lamdangtung/issue/LAM-19/t26-trang-thai-key-va-cau-hinh-ket-noi-an-toan",
+      "status_at_import": "Backlog",
+      "blocked_by": [
+        {
+          "task_id": "T11",
+          "issue": "LAM-15"
+        }
+      ],
+      "last_known_status": "Done",
+      "verification": "agent_verified",
+      "evidence": "docs/tasks/v1.1/evidence/T26.md",
+      "last_verified_at": "2026-10-29"
+    },
+    {
+      "task_id": "T27",
+      "id": "LAM-31",
+      "uuid": "8d4c008d-e261-40fc-bd83-b88d984b29f3",
+      "title": "[T27] Tổng quan và lịch sử công việc thực tế",
+      "url": "https://linear.app/lamdangtung/issue/LAM-31/t27-tong-quan-va-lich-su-cong-viec-thuc-te",
+      "status_at_import": "Backlog",
+      "blocked_by": [
+        {
+          "task_id": "T18",
+          "issue": "LAM-23"
+        },
+        {
+          "task_id": "T22",
+          "issue": "LAM-27"
+        },
+        {
+          "task_id": "T24",
+          "issue": "LAM-29"
+        }
+      ],
+      "last_known_status": "Done",
+      "verification": "agent_verified",
+      "last_verified_at": "2026-10-29",
+      "evidence": "docs/tasks/v1.1/evidence/T27.md"
+    },
+    {
+      "task_id": "T28",
+      "id": "LAM-32",
+      "uuid": "883d92d6-8c6b-44bd-b2db-1dfd10375ffd",
+      "title": "[T28] Chống job trùng và xung đột app/CLI",
+      "url": "https://linear.app/lamdangtung/issue/LAM-32/t28-chong-job-trung-va-xung-djot-appcli",
+      "status_at_import": "Backlog",
+      "blocked_by": [
+        {
+          "task_id": "T18",
+          "issue": "LAM-23"
+        },
+        {
+          "task_id": "T20",
+          "issue": "LAM-25"
+        },
+        {
+          "task_id": "T24",
+          "issue": "LAM-29"
+        }
+      ],
+      "last_known_status": "Done",
+      "verification": "agent_verified",
+      "last_verified_at": "2026-10-29",
+      "evidence": "docs/tasks/v1.1/evidence/T28.md"
+    },
+    {
+      "task_id": "T29",
+      "id": "LAM-33",
+      "uuid": "ff680c7b-47e6-4531-b943-2aadc2b295a5",
+      "title": "[T29] Kiểm chứng ranh giới truy cập và upload local",
+      "url": "https://linear.app/lamdangtung/issue/LAM-33/t29-kiem-chung-ranh-gioi-truy-cap-va-upload-local",
+      "status_at_import": "Backlog",
+      "blocked_by": [
+        {
+          "task_id": "T07",
+          "issue": "LAM-11"
+        },
+        {
+          "task_id": "T13",
+          "issue": "LAM-17"
+        },
+        {
+          "task_id": "T14",
+          "issue": "LAM-18"
+        },
+        {
+          "task_id": "T26",
+          "issue": "LAM-19"
+        }
+      ],
+      "last_known_status": "Done",
+      "verification": "agent_verified",
+      "last_verified_at": "2026-10-29",
+      "evidence": "docs/tasks/v1.1/evidence/T29.md"
+    },
+    {
+      "task_id": "T30",
+      "id": "LAM-34",
+      "uuid": "60af6dff-72ad-434e-90f7-6df2fb72824d",
+      "title": "[T30] Backup/restore dữ liệu đang vận hành",
+      "url": "https://linear.app/lamdangtung/issue/LAM-34/t30-backuprestore-du-lieu-djang-van-hanh",
+      "status_at_import": "Backlog",
+      "blocked_by": [
+        {
+          "task_id": "T20",
+          "issue": "LAM-25"
+        },
+        {
+          "task_id": "T23",
+          "issue": "LAM-28"
+        },
+        {
+          "task_id": "T24",
+          "issue": "LAM-29"
+        }
+      ],
+      "last_known_status": "Done",
+      "verification": "agent_verified",
+      "last_verified_at": "2026-10-29",
+      "evidence": "docs/tasks/v1.1/evidence/T30.md"
+    },
+    {
+      "task_id": "T31",
+      "id": "LAM-35",
+      "uuid": "7473d16d-4e56-4eac-976d-048472ffaa4e",
+      "title": "[T31] Cài provider và nghiệm thu giọng thật",
+      "url": "https://linear.app/lamdangtung/issue/LAM-35/t31-cai-provider-va-nghiem-thu-giong-that",
+      "status_at_import": "Backlog",
+      "blocked_by": [
+        {
+          "task_id": "T03",
+          "issue": "LAM-7"
+        },
+        {
+          "task_id": "T17",
+          "issue": "LAM-22"
+        },
+        {
+          "task_id": "T25",
+          "issue": "LAM-30"
+        }
+      ],
+      "last_known_status": "Done",
+      "verification": "agent_verified",
+      "last_verified_at": "2026-10-29",
+      "evidence": "docs/tasks/v1.1/evidence/T31.md"
+    },
+    {
+      "task_id": "T32",
+      "id": "LAM-36",
+      "uuid": "4f98f134-4139-4524-b55b-3ed6746e2dea",
+      "title": "[T32] Trạng thái UI, bàn phím và bố cục màn hình nhỏ",
+      "url": "https://linear.app/lamdangtung/issue/LAM-36/t32-trang-thai-ui-ban-phim-va-bo-cuc-man-hinh-nho",
+      "status_at_import": "Backlog",
+      "blocked_by": [
+        {
+          "task_id": "T10",
+          "issue": "LAM-14"
+        },
+        {
+          "task_id": "T14",
+          "issue": "LAM-18"
+        },
+        {
+          "task_id": "T19",
+          "issue": "LAM-24"
+        },
+        {
+          "task_id": "T22",
+          "issue": "LAM-27"
+        },
+        {
+          "task_id": "T24",
+          "issue": "LAM-29"
+        },
+        {
+          "task_id": "T27",
+          "issue": "LAM-31"
+        }
+      ],
+      "last_known_status": "Done",
+      "verification": "agent_verified",
+      "last_verified_at": "2026-10-29",
+      "evidence": "docs/tasks/v1.1/evidence/T32.md"
+    },
+    {
+      "task_id": "T33",
+      "id": "LAM-37",
+      "uuid": "c247c5d8-492e-4bd6-b100-cb817dac3bad",
+      "title": "[T33] Khởi động thống nhất, cài mới và giữ CLI tương thích",
+      "url": "https://linear.app/lamdangtung/issue/LAM-37/t33-khoi-djong-thong-nhat-cai-moi-va-giu-cli-tuong-thich",
+      "status_at_import": "Backlog",
+      "blocked_by": [
+        {
+          "task_id": "T20",
+          "issue": "LAM-25"
+        },
+        {
+          "task_id": "T28",
+          "issue": "LAM-32"
+        },
+        {
+          "task_id": "T29",
+          "issue": "LAM-33"
+        },
+        {
+          "task_id": "T30",
+          "issue": "LAM-34"
+        },
+        {
+          "task_id": "T31",
+          "issue": "LAM-35"
+        },
+        {
+          "task_id": "T32",
+          "issue": "LAM-36"
+        }
+      ],
+      "last_known_status": "Done",
+      "verification": "agent_verified",
+      "last_verified_at": "2026-10-29",
+      "evidence": "docs/tasks/v1.1/evidence/T33.md"
+    },
+    {
+      "task_id": "T34",
+      "id": "LAM-38",
+      "uuid": "ec2c36de-0aba-41ef-a2be-93dc5706964a",
+      "title": "[T34] Nghiệm thu release và bộ tài liệu sử dụng",
+      "url": "https://linear.app/lamdangtung/issue/LAM-38/t34-nghiem-thu-release-va-bo-tai-lieu-su-dung",
+      "status_at_import": "Backlog",
+      "blocked_by": [
+        {
+          "task_id": "T01",
+          "issue": "LAM-5"
+        },
+        {
+          "task_id": "T02",
+          "issue": "LAM-6"
+        },
+        {
+          "task_id": "T03",
+          "issue": "LAM-7"
+        },
+        {
+          "task_id": "T04",
+          "issue": "LAM-8"
+        },
+        {
+          "task_id": "T05",
+          "issue": "LAM-9"
+        },
+        {
+          "task_id": "T06",
+          "issue": "LAM-10"
+        },
+        {
+          "task_id": "T07",
+          "issue": "LAM-11"
+        },
+        {
+          "task_id": "T08",
+          "issue": "LAM-12"
+        },
+        {
+          "task_id": "T09",
+          "issue": "LAM-13"
+        },
+        {
+          "task_id": "T10",
+          "issue": "LAM-14"
+        },
+        {
+          "task_id": "T11",
+          "issue": "LAM-15"
+        },
+        {
+          "task_id": "T12",
+          "issue": "LAM-16"
+        },
+        {
+          "task_id": "T13",
+          "issue": "LAM-17"
+        },
+        {
+          "task_id": "T14",
+          "issue": "LAM-18"
+        },
+        {
+          "task_id": "T15",
+          "issue": "LAM-20"
+        },
+        {
+          "task_id": "T16",
+          "issue": "LAM-21"
+        },
+        {
+          "task_id": "T17",
+          "issue": "LAM-22"
+        },
+        {
+          "task_id": "T18",
+          "issue": "LAM-23"
+        },
+        {
+          "task_id": "T19",
+          "issue": "LAM-24"
+        },
+        {
+          "task_id": "T20",
+          "issue": "LAM-25"
+        },
+        {
+          "task_id": "T21",
+          "issue": "LAM-26"
+        },
+        {
+          "task_id": "T22",
+          "issue": "LAM-27"
+        },
+        {
+          "task_id": "T23",
+          "issue": "LAM-28"
+        },
+        {
+          "task_id": "T24",
+          "issue": "LAM-29"
+        },
+        {
+          "task_id": "T25",
+          "issue": "LAM-30"
+        },
+        {
+          "task_id": "T26",
+          "issue": "LAM-19"
+        },
+        {
+          "task_id": "T27",
+          "issue": "LAM-31"
+        },
+        {
+          "task_id": "T28",
+          "issue": "LAM-32"
+        },
+        {
+          "task_id": "T29",
+          "issue": "LAM-33"
+        },
+        {
+          "task_id": "T30",
+          "issue": "LAM-34"
+        },
+        {
+          "task_id": "T31",
+          "issue": "LAM-35"
+        },
+        {
+          "task_id": "T32",
+          "issue": "LAM-36"
+        },
+        {
+          "task_id": "T33",
+          "issue": "LAM-37"
+        }
+      ],
+      "last_known_status": "In Progress",
+      "verification": "awaiting_real_translation_and_user_audio_review",
+      "evidence": "docs/tasks/v1.1/evidence/T34.md"
+    }
+  ],
+  "last_status_sync": "2026-10-29"
+}

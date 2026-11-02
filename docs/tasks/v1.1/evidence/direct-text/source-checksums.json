@@ -1,0 +1,5 @@
+{
+  "api/imports.py": "c8587af650389d4cb696bf4723ba8ecfeff0d49d9f3af44e67b237e3d1412cb4",
+  "app/src/components/TxtImport.vue": "3a09b98461023b47389524d7398df31e69b23ab4f04a6a3769dd1ae86eb545e1",
+  "tests/test_text_imports.py": "ea92d97e6a2daa4a596d8618810f0871aec5dbae2de3b2d6d8abe66581281a61"
+}

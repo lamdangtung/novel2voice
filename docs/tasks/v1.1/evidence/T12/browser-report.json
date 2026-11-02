@@ -1,0 +1,13 @@
+{
+  "passed": true,
+  "books": [
+    "04631ff0-adef-4d53-a1c2-9d858f3d48cf",
+    "e83bdb4d-8b09-4411-b274-7977cb275531"
+  ],
+  "own_glossary": true,
+  "other_inherits_default": true,
+  "invalid_row_keeps_current": true,
+  "versions": 2,
+  "persisted_after_restart": true,
+  "js_errors": []
+}

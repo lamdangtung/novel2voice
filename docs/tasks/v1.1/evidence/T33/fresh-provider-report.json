@@ -1,0 +1,59 @@
+{
+  "provider": "vieneu",
+  "voice": "Hải Đăng",
+  "offline": true,
+  "workspace": "/private/var/folders/_r/gvdgw6ns361gp94qk283q3sh0000gn/T/n2v-clean-cl7wd4wi/.verification/workspaces/t31-real/web",
+  "book": "d82dbec8-dcd7-4e0d-8041-cc3899a02b96",
+  "results": [
+    {
+      "job": "27a36818-1401-5005-9157-76ae5ebf8004",
+      "status": "completed",
+      "seconds": 7.38,
+      "report": {
+        "status": "completed",
+        "voice_artifact_id": "18b18380-5b99-4924-8c5e-180ceff16399",
+        "duration": 4.0,
+        "sha256": "1b45f9c09cbba00b857bde7d3ec856b090172d75beb66da21fa4fc784f1359bb",
+        "provider_calls": 1,
+        "reused": false,
+        "steps": 1,
+        "completed_steps": 1,
+        "notice": "Đã tạo mẫu giọng thật; chưa phải đánh giá chất lượng của người dùng."
+      }
+    },
+    {
+      "job": "ca0c2e00-5c5f-5793-9a51-11b60848cc60",
+      "status": "completed",
+      "seconds": 2.2,
+      "report": {
+        "status": "completed",
+        "artifact_id": "043fdd04-775a-41c6-9cdb-79d665de6a72",
+        "provider_calls": 1,
+        "reused": false,
+        "steps": 1,
+        "completed_steps": 1,
+        "notice": "Đã tạo và xác minh file audio.",
+        "chapter_id": "8669bc11-4b1f-4275-a697-4c4bb43a8248",
+        "number": 1,
+        "action": "create_tts"
+      }
+    },
+    {
+      "job": "48946b8d-9772-545a-b14e-e58125f0e0cf",
+      "status": "completed",
+      "seconds": 0.0,
+      "report": {
+        "status": "completed",
+        "artifact_id": "043fdd04-775a-41c6-9cdb-79d665de6a72",
+        "provider_calls": 0,
+        "reused": true,
+        "steps": 1,
+        "completed_steps": 1,
+        "notice": "Tái sử dụng audio; không gọi lại provider.",
+        "chapter_id": "8669bc11-4b1f-4275-a697-4c4bb43a8248",
+        "number": 1,
+        "action": "reuse"
+      }
+    }
+  ]
+}

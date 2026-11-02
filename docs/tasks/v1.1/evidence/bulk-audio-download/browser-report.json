@@ -1,0 +1,23 @@
+{
+  "passed": true,
+  "book": "fbfb17fb-d1b7-4b3b-914c-a12a8f998622",
+  "selected_across_pages": [
+    1,
+    21,
+    45
+  ],
+  "range_chapters": [
+    1,
+    2,
+    10
+  ],
+  "range_skipped": 7,
+  "exact_mp3_hashes": true,
+  "native_browser_download": true,
+  "missing_all_disabled": true,
+  "invalid_range": true,
+  "deleted_after_preview_blocked": true,
+  "no_tts_jobs": true,
+  "mobile_no_overflow": true,
+  "js_errors": []
+}

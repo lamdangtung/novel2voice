@@ -1,0 +1,17 @@
+{
+  "passed": true,
+  "book": "65ea658f-7356-4339-8ea6-7a3a5adc5154",
+  "delete_from_detail": true,
+  "cancel_escape_focus": true,
+  "playing_audio_stopped": true,
+  "selection_cleared": true,
+  "artifact404": true,
+  "history_kept": true,
+  "reload_deleted": true,
+  "running_job409": true,
+  "stop_then_delete": true,
+  "empty_counts": true,
+  "last_page_fallback": true,
+  "mobile_no_overflow": true,
+  "js_errors": []
+}

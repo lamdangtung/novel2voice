@@ -1,0 +1,459 @@
+{
+  "passed": true,
+  "providers": {
+    "vieneu": {
+      "provider": "vieneu",
+      "status": "checks_passed",
+      "runtime": "project .venv",
+      "fixture": null,
+      "checks": [
+        {
+          "id": "ffmpeg",
+          "label": "ffmpeg",
+          "status": "ready",
+          "message": "Có trong PATH của server.",
+          "remedy": ""
+        },
+        {
+          "id": "ffprobe",
+          "label": "ffprobe",
+          "status": "ready",
+          "message": "Có trong PATH của server.",
+          "remedy": ""
+        },
+        {
+          "id": "runtime",
+          "label": "Python CLI/TTS",
+          "status": "ready",
+          "message": "Đã kiểm tra môi trường CLI/TTS.",
+          "remedy": ""
+        },
+        {
+          "id": "dependency:openai",
+          "label": "Thư viện openai",
+          "status": "ready",
+          "message": "Đã cài (chưa thử import/nạp thư viện).",
+          "remedy": ""
+        },
+        {
+          "id": "dependency:dotenv",
+          "label": "Thư viện dotenv",
+          "status": "ready",
+          "message": "Đã cài (chưa thử import/nạp thư viện).",
+          "remedy": ""
+        },
+        {
+          "id": "dependency:typer",
+          "label": "Thư viện typer",
+          "status": "ready",
+          "message": "Đã cài (chưa thử import/nạp thư viện).",
+          "remedy": ""
+        },
+        {
+          "id": "dependency:rich",
+          "label": "Thư viện rich",
+          "status": "ready",
+          "message": "Đã cài (chưa thử import/nạp thư viện).",
+          "remedy": ""
+        },
+        {
+          "id": "dependency:tqdm",
+          "label": "Thư viện tqdm",
+          "status": "ready",
+          "message": "Đã cài (chưa thử import/nạp thư viện).",
+          "remedy": ""
+        },
+        {
+          "id": "dependency:vieneu",
+          "label": "Thư viện vieneu",
+          "status": "ready",
+          "message": "Đã cài (chưa thử import/nạp thư viện).",
+          "remedy": ""
+        },
+        {
+          "id": "config:MAX_CHUNK_CHARS",
+          "label": "MAX_CHUNK_CHARS",
+          "status": "ready",
+          "message": "Là số nguyên dương.",
+          "remedy": ""
+        },
+        {
+          "id": "config:TTS_CONCURRENCY",
+          "label": "TTS_CONCURRENCY",
+          "status": "ready",
+          "message": "Là số nguyên dương.",
+          "remedy": ""
+        },
+        {
+          "id": "key:OPENAI_API_KEY",
+          "label": "OPENAI_API_KEY",
+          "status": "optional",
+          "message": "Chưa cấu hình; tùy chọn cho provider đang chọn.",
+          "remedy": ""
+        },
+        {
+          "id": "key:HF_TOKEN",
+          "label": "HF_TOKEN",
+          "status": "optional",
+          "message": "Chưa cấu hình; tùy chọn cho provider đang chọn.",
+          "remedy": ""
+        },
+        {
+          "id": "config:VIENEU_MODE",
+          "label": "Mode VieNeu",
+          "status": "ready",
+          "message": "v3turbo",
+          "remedy": ""
+        },
+        {
+          "id": "model_validation",
+          "label": "Model VieNeu",
+          "status": "unverified",
+          "message": "Chưa xác minh cache, khả năng nạp model hoặc server remote. Kiểm tra này không tải model.",
+          "remedy": "Nghiệm thu giọng thật ở T31; thao tác chạy thật có thể cần tải model hoặc gọi mạng."
+        }
+      ],
+      "notice": "Chỉ kiểm tra điều kiện cục bộ. Kết quả đạt không đảm bảo tạo giọng thành công. Không nạp/tải model hoặc gọi mạng."
+    },
+    "piper": {
+      "provider": "piper",
+      "status": "blocked",
+      "runtime": "project .venv",
+      "fixture": null,
+      "checks": [
+        {
+          "id": "ffmpeg",
+          "label": "ffmpeg",
+          "status": "ready",
+          "message": "Có trong PATH của server.",
+          "remedy": ""
+        },
+        {
+          "id": "ffprobe",
+          "label": "ffprobe",
+          "status": "ready",
+          "message": "Có trong PATH của server.",
+          "remedy": ""
+        },
+        {
+          "id": "runtime",
+          "label": "Python CLI/TTS",
+          "status": "ready",
+          "message": "Đã kiểm tra môi trường CLI/TTS.",
+          "remedy": ""
+        },
+        {
+          "id": "dependency:openai",
+          "label": "Thư viện openai",
+          "status": "ready",
+          "message": "Đã cài (chưa thử import/nạp thư viện).",
+          "remedy": ""
+        },
+        {
+          "id": "dependency:dotenv",
+          "label": "Thư viện dotenv",
+          "status": "ready",
+          "message": "Đã cài (chưa thử import/nạp thư viện).",
+          "remedy": ""
+        },
+        {
+          "id": "dependency:typer",
+          "label": "Thư viện typer",
+          "status": "ready",
+          "message": "Đã cài (chưa thử import/nạp thư viện).",
+          "remedy": ""
+        },
+        {
+          "id": "dependency:rich",
+          "label": "Thư viện rich",
+          "status": "ready",
+          "message": "Đã cài (chưa thử import/nạp thư viện).",
+          "remedy": ""
+        },
+        {
+          "id": "dependency:tqdm",
+          "label": "Thư viện tqdm",
+          "status": "ready",
+          "message": "Đã cài (chưa thử import/nạp thư viện).",
+          "remedy": ""
+        },
+        {
+          "id": "dependency:piper",
+          "label": "Thư viện piper",
+          "status": "missing",
+          "message": "Chưa cài trong Python CLI/TTS.",
+          "remedy": "Cài dependency vào .venv gốc theo requirements.txt; Piper cần gói piper-tts. Sau đó kiểm tra lại."
+        },
+        {
+          "id": "config:MAX_CHUNK_CHARS",
+          "label": "MAX_CHUNK_CHARS",
+          "status": "ready",
+          "message": "Là số nguyên dương.",
+          "remedy": ""
+        },
+        {
+          "id": "config:TTS_CONCURRENCY",
+          "label": "TTS_CONCURRENCY",
+          "status": "ready",
+          "message": "Là số nguyên dương.",
+          "remedy": ""
+        },
+        {
+          "id": "config:PIPER_NUM_WORKERS",
+          "label": "PIPER_NUM_WORKERS",
+          "status": "ready",
+          "message": "Là số nguyên dương.",
+          "remedy": ""
+        },
+        {
+          "id": "key:OPENAI_API_KEY",
+          "label": "OPENAI_API_KEY",
+          "status": "optional",
+          "message": "Chưa cấu hình; tùy chọn cho provider đang chọn.",
+          "remedy": ""
+        },
+        {
+          "id": "key:HF_TOKEN",
+          "label": "HF_TOKEN",
+          "status": "optional",
+          "message": "Chưa cấu hình; tùy chọn cho provider đang chọn.",
+          "remedy": ""
+        },
+        {
+          "id": "model:PIPER_MODEL_PATH",
+          "label": "PIPER_MODEL_PATH",
+          "status": "ready",
+          "message": "Có file không rỗng; chưa nạp model.",
+          "remedy": ""
+        },
+        {
+          "id": "model:PIPER_CONFIG_PATH",
+          "label": "PIPER_CONFIG_PATH",
+          "status": "ready",
+          "message": "Có file không rỗng; chưa nạp model.",
+          "remedy": ""
+        },
+        {
+          "id": "model_validation",
+          "label": "Khả năng nạp model Piper",
+          "status": "unverified",
+          "message": "Cần thử giọng thật để xác minh model tương thích; T03 không nạp model.",
+          "remedy": ""
+        }
+      ],
+      "notice": "Chỉ kiểm tra điều kiện cục bộ. Kết quả đạt không đảm bảo tạo giọng thành công. Không nạp/tải model hoặc gọi mạng."
+    },
+    "edge-tts": {
+      "provider": "edge-tts",
+      "status": "checks_passed",
+      "runtime": "project .venv",
+      "fixture": null,
+      "checks": [
+        {
+          "id": "ffmpeg",
+          "label": "ffmpeg",
+          "status": "ready",
+          "message": "Có trong PATH của server.",
+          "remedy": ""
+        },
+        {
+          "id": "ffprobe",
+          "label": "ffprobe",
+          "status": "ready",
+          "message": "Có trong PATH của server.",
+          "remedy": ""
+        },
+        {
+          "id": "runtime",
+          "label": "Python CLI/TTS",
+          "status": "ready",
+          "message": "Đã kiểm tra môi trường CLI/TTS.",
+          "remedy": ""
+        },
+        {
+          "id": "dependency:openai",
+          "label": "Thư viện openai",
+          "status": "ready",
+          "message": "Đã cài (chưa thử import/nạp thư viện).",
+          "remedy": ""
+        },
+        {
+          "id": "dependency:dotenv",
+          "label": "Thư viện dotenv",
+          "status": "ready",
+          "message": "Đã cài (chưa thử import/nạp thư viện).",
+          "remedy": ""
+        },
+        {
+          "id": "dependency:typer",
+          "label": "Thư viện typer",
+          "status": "ready",
+          "message": "Đã cài (chưa thử import/nạp thư viện).",
+          "remedy": ""
+        },
+        {
+          "id": "dependency:rich",
+          "label": "Thư viện rich",
+          "status": "ready",
+          "message": "Đã cài (chưa thử import/nạp thư viện).",
+          "remedy": ""
+        },
+        {
+          "id": "dependency:tqdm",
+          "label": "Thư viện tqdm",
+          "status": "ready",
+          "message": "Đã cài (chưa thử import/nạp thư viện).",
+          "remedy": ""
+        },
+        {
+          "id": "dependency:edge_tts",
+          "label": "Thư viện edge_tts",
+          "status": "ready",
+          "message": "Đã cài (chưa thử import/nạp thư viện).",
+          "remedy": ""
+        },
+        {
+          "id": "config:MAX_CHUNK_CHARS",
+          "label": "MAX_CHUNK_CHARS",
+          "status": "ready",
+          "message": "Là số nguyên dương.",
+          "remedy": ""
+        },
+        {
+          "id": "config:TTS_CONCURRENCY",
+          "label": "TTS_CONCURRENCY",
+          "status": "ready",
+          "message": "Là số nguyên dương.",
+          "remedy": ""
+        },
+        {
+          "id": "key:OPENAI_API_KEY",
+          "label": "OPENAI_API_KEY",
+          "status": "optional",
+          "message": "Chưa cấu hình; tùy chọn cho provider đang chọn.",
+          "remedy": ""
+        },
+        {
+          "id": "key:HF_TOKEN",
+          "label": "HF_TOKEN",
+          "status": "optional",
+          "message": "Chưa cấu hình; tùy chọn cho provider đang chọn.",
+          "remedy": ""
+        },
+        {
+          "id": "service_validation",
+          "label": "Dịch vụ giọng đọc",
+          "status": "unverified",
+          "message": "Chưa xác minh kết nối, quyền truy cập, quota hay giọng đọc; không gọi mạng.",
+          "remedy": ""
+        }
+      ],
+      "notice": "Chỉ kiểm tra điều kiện cục bộ. Kết quả đạt không đảm bảo tạo giọng thành công. Không nạp/tải model hoặc gọi mạng."
+    },
+    "openai": {
+      "provider": "openai",
+      "status": "blocked",
+      "runtime": "project .venv",
+      "fixture": null,
+      "checks": [
+        {
+          "id": "ffmpeg",
+          "label": "ffmpeg",
+          "status": "ready",
+          "message": "Có trong PATH của server.",
+          "remedy": ""
+        },
+        {
+          "id": "ffprobe",
+          "label": "ffprobe",
+          "status": "ready",
+          "message": "Có trong PATH của server.",
+          "remedy": ""
+        },
+        {
+          "id": "runtime",
+          "label": "Python CLI/TTS",
+          "status": "ready",
+          "message": "Đã kiểm tra môi trường CLI/TTS.",
+          "remedy": ""
+        },
+        {
+          "id": "dependency:openai",
+          "label": "Thư viện openai",
+          "status": "ready",
+          "message": "Đã cài (chưa thử import/nạp thư viện).",
+          "remedy": ""
+        },
+        {
+          "id": "dependency:dotenv",
+          "label": "Thư viện dotenv",
+          "status": "ready",
+          "message": "Đã cài (chưa thử import/nạp thư viện).",
+          "remedy": ""
+        },
+        {
+          "id": "dependency:typer",
+          "label": "Thư viện typer",
+          "status": "ready",
+          "message": "Đã cài (chưa thử import/nạp thư viện).",
+          "remedy": ""
+        },
+        {
+          "id": "dependency:rich",
+          "label": "Thư viện rich",
+          "status": "ready",
+          "message": "Đã cài (chưa thử import/nạp thư viện).",
+          "remedy": ""
+        },
+        {
+          "id": "dependency:tqdm",
+          "label": "Thư viện tqdm",
+          "status": "ready",
+          "message": "Đã cài (chưa thử import/nạp thư viện).",
+          "remedy": ""
+        },
+        {
+          "id": "config:MAX_CHUNK_CHARS",
+          "label": "MAX_CHUNK_CHARS",
+          "status": "ready",
+          "message": "Là số nguyên dương.",
+          "remedy": ""
+        },
+        {
+          "id": "config:TTS_CONCURRENCY",
+          "label": "TTS_CONCURRENCY",
+          "status": "ready",
+          "message": "Là số nguyên dương.",
+          "remedy": ""
+        },
+        {
+          "id": "key:OPENAI_API_KEY",
+          "label": "OPENAI_API_KEY",
+          "status": "missing",
+          "message": "Chưa cấu hình.",
+          "remedy": "Cấu hình ở server, không nhập key trên trang này."
+        },
+        {
+          "id": "key:HF_TOKEN",
+          "label": "HF_TOKEN",
+          "status": "optional",
+          "message": "Chưa cấu hình; tùy chọn cho provider đang chọn.",
+          "remedy": ""
+        },
+        {
+          "id": "service_validation",
+          "label": "Dịch vụ giọng đọc",
+          "status": "unverified",
+          "message": "Chưa xác minh kết nối, quyền truy cập, quota hay giọng đọc; không gọi mạng.",
+          "remedy": ""
+        }
+      ],
+      "notice": "Chỉ kiểm tra điều kiện cục bộ. Kết quả đạt không đảm bảo tạo giọng thành công. Không nạp/tải model hoặc gọi mạng."
+    }
+  },
+  "api_recovery": true,
+  "fixtures": true,
+  "mobile_no_overflow": true,
+  "external_requests": [],
+  "js_errors": []
+}

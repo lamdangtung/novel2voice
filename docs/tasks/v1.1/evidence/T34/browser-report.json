@@ -1,0 +1,24 @@
+{
+  "passed": true,
+  "books": [
+    "a9e18531-24be-4ef8-987c-3594092d4404",
+    "86cd9d30-bb5d-49d5-88de-a89046e1c330"
+  ],
+  "tts": "032b13df-8517-5eab-aa40-f562b1f38950",
+  "process": "6528a1be-dff2-54fd-927f-a9a7f2195fc9",
+  "merge": "ff964782-0672-516d-a4cd-72a389962e36",
+  "import_mp3": true,
+  "stop_resume": true,
+  "merged_play": true,
+  "reload": true,
+  "idempotent_confirm": true,
+  "counts": {
+    "books": 2,
+    "chapters": 3,
+    "current_audio": 3,
+    "audio_attention": 0,
+    "merged_saved": 1,
+    "jobs_attention": 0
+  },
+  "js_errors": []
+}

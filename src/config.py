@@ -15,7 +15,7 @@ GLOSSARY_PATH = BASE_DIR / "glossary.csv"
 
 # LLM / Translation Settings
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
-OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", None)
+OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", None) or None
 TRANSLATION_MODEL = os.getenv("TRANSLATION_MODEL", "gpt-4o-mini")
 
 # TTS Settings

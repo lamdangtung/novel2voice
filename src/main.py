@@ -251,29 +251,19 @@ def doctor_command(
     provider: Optional[str] = typer.Option(None, "--provider", "-p"),
 ):
     """Kiểm tra dependency và cấu hình TTS, không nạp model hay gọi mạng."""
-    import importlib.util
-    from src.audio_merger import AudioMerger
-    tts_prov = None
+    from src.doctor import check_environment
     try:
-        AudioMerger().check_environment()
-        tts_prov = get_tts_provider(provider_name=provider)
-        modules = {"VieNeuTTSProvider": "vieneu", "EdgeTTSProvider": "edge_tts",
-                   "LocalTTSProvider": "piper", "OpenAITTSProvider": "openai"}
-        module = modules[type(tts_prov).__name__]
-        if importlib.util.find_spec(module) is None:
-            raise RuntimeError(f"Chưa cài dependency: {module}")
-        if getattr(tts_prov, "mode", None) == "remote":
-            if not tts_prov.api_base or not tts_prov.model_name:
-                raise ValueError("Remote mode cần VIENEU_API_BASE và VIENEU_MODEL_NAME.")
-        console.print(f"[green]✔ ffmpeg, ffprobe, dependency: {type(tts_prov).__name__}[/green]")
-        console.print(f"Chunk: {config.MAX_CHUNK_CHARS} ký tự; batch: {config.TTS_CONCURRENCY} đoạn.")
-        console.print("Kiểm tra này chưa xác nhận model nạp được hoặc chất lượng giọng đọc.")
-    except Exception as error:
-        console.print(f"[red]✖ {error}[/red]")
+        report = check_environment(provider)
+    except Exception:
+        console.print("[red]Không đọc được cấu hình môi trường; kiểm tra .env và provider.[/red]")
         raise typer.Exit(code=1)
-    finally:
-        if tts_prov is not None and hasattr(tts_prov, "close"):
-            tts_prov.close()
+    for check in report['checks']:
+        console.print(f"{check['status']}: {check['label']} — {check['message']}", markup=False)
+        if check['remedy']:
+            console.print(f"  → {check['remedy']}", markup=False)
+    console.print(report['notice'], markup=False)
+    if report['status'] == 'blocked':
+        raise typer.Exit(code=1)
 
 
 @app.command("status")

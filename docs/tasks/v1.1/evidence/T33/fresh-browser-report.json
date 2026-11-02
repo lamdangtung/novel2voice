@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "real_playback": true,
+  "second_book_real_tts_via_ui": true,
+  "book_a": "d82dbec8-dcd7-4e0d-8041-cc3899a02b96",
+  "book_b": "3f544bf1-1cb9-4a8f-872d-397136b080db",
+  "job_b": "797f42af-fbb2-593c-afa2-cffa6ab8e998",
+  "book_a_audio_unchanged": true,
+  "offline_model_cache": true,
+  "js_errors": []
+}

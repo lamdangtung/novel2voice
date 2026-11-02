@@ -1,0 +1,8 @@
+{
+  "api/audio_downloads.py": "2c11d09cd3c3b873d980e7e0d766c4c80779ee8c3d7d0fb21ef5cc1168bfa244",
+  "api/books.py": "45b6a3b260ea2cee813ba6c034c5cfd3461d27e8c5b1816ff385b10a5deb0571",
+  "app/src/components/AudioBulkDownload.vue": "7d736e53021465851606cd8b571ddff4a68b492960717fbd766b1a7496cb49cb",
+  "app/src/components/ChapterTable.vue": "0d5bed6d059c4a7b545acbd2fea4721022d9779310de4ac63bec1976ed3262e1",
+  "app/src/lib/library-client.js": "be301fcd1110b8b3064687d972533cde0b5fad23f122edb353d0ec277b7154f2",
+  "tests/test_audio_downloads.py": "78b599c4b4ce536765e58d1092a26e0fa875d539dedb79426456b45a4eb7cdd1"
+}

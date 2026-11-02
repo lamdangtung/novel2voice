@@ -221,3 +221,15 @@ __marimo__/
 input
 output
 models
+# Local web-only development environment
+.venv-web/
+
+# Vue/Vite frontend dependencies and local caches
+node_modules/
+.pnpm-store/
+
+# Disposable offline verification workspaces
+.verification/
+
+# Managed web library (production local)
+.novel2voice/

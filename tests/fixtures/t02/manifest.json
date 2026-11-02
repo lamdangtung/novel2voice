@@ -1,0 +1,25 @@
+{
+  "version": "t02-v1",
+  "books": [{"id": "A", "name": "Truyện kiểm thử A"}, {"id": "B", "name": "Truyện kiểm thử B"}],
+  "text_files": [
+    {"path": "fixtures/books/A/1_vi.txt", "text": "Chương 1. Bình minh.\n\nMặt trời mọc sau ngọn đồi. Đây là nội dung mẫu để kiểm thử.\n", "case": "valid_vi"},
+    {"path": "fixtures/books/A/2_vi.txt", "text": "Chương 2. Lên đường.\n\nHai người bạn bắt đầu cuộc hành trình.\n", "case": "valid_vi"},
+    {"path": "fixtures/books/A/ep2/10_vi.txt", "text": "Chương 10. Trở về.\n\nCon đường quen thuộc hiện ra trước mắt.\n", "case": "nested_natural_sort"},
+    {"path": "fixtures/books/B/1_vi.txt", "text": "Chương 1 của truyện B.\n\nCùng số chương nhưng thuộc một bộ truyện khác.\n", "case": "cross_book_same_number"},
+    {"path": "fixtures/books/B/2_vi.txt", "text": "Chương 2 của truyện B. Một ngày mới bắt đầu.\n", "case": "valid_vi"},
+    {"path": "fixtures/books/B/ep2/10_vi.txt", "text": "Chương 10 của truyện B. Hành trình tiếp tục.\n", "case": "nested_natural_sort"},
+    {"path": "fixtures/books/A/en/1_en.txt", "text": "Chapter 1. Dawn.\n\nThe sun rose behind the hill. Two friends began their journey.\n", "case": "valid_en"},
+    {"path": "fixtures/edge-cases/empty/3_vi.txt", "text": "", "case": "empty"},
+    {"path": "fixtures/edge-cases/invalid-encoding/4_vi.txt", "hex": "fffe0080", "case": "invalid_utf8"},
+    {"path": "fixtures/edge-cases/duplicate/2_vi.txt", "text": "Một chương 2 khác gây trùng số trong cùng truyện A.\n", "case": "duplicate_number"},
+    {"path": "fixtures/edge-cases/changed/2_vi.txt", "text": "Chương 2. Lên đường.\n\nNội dung đã sửa để kiểm tra invalidation.\n", "case": "changed_content"},
+    {"path": "fixtures/edge-cases/unidentified/no-number.txt", "text": "Tên file không chứa số chương.\n", "case": "unidentified_number"},
+    {"path": "fixtures/glossary.csv", "text": "en,vi\nDawn,Bình minh\nhill,ngọn đồi\n", "case": "glossary"}
+  ],
+  "audio_files": [
+    {"path": "fixtures/books/A/audio/1.mp3", "case": "valid_audio", "valid": true},
+    {"path": "fixtures/books/B/audio/1.mp3", "case": "cross_book_same_number", "valid": true},
+    {"path": "fixtures/edge-cases/ambiguous-audio/1.mp3", "case": "ambiguous_audio_mapping", "valid": true},
+    {"path": "fixtures/edge-cases/corrupt-audio/2.mp3", "case": "corrupt_audio", "valid": false}
+  ]
+}
