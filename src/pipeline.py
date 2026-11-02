@@ -4,6 +4,7 @@ from typing import Optional, List, Tuple
 from rich.console import Console
 
 from src import config
+from src.progress import emit
 from src.translator import NovelTranslator
 from src.text_chunker import TextChunker
 from src.tts import get_tts_provider, BaseTTSProvider
@@ -25,7 +26,9 @@ class NovelPipeline:
         audio_merger: Optional[AudioMerger] = None,
         chunker: Optional[TextChunker] = None,
         concurrency: Optional[int] = None,
+        progress=None,
     ):
+        self.progress = progress
         self.translator = translator
         self.tts_provider = tts_provider
         self.audio_merger = audio_merger or AudioMerger()
@@ -38,7 +41,7 @@ class NovelPipeline:
         """Chỉ thực hiện bước dịch EN -> VI."""
         console.print(f"[bold cyan]>> Đang dịch file:[/bold cyan] {input_file.name}")
         if self.translator is None:
-            self.translator = NovelTranslator()
+            self.translator = NovelTranslator(progress=self.progress)
         vi_file = self.translator.translate_file(input_file, output_file)
         console.print(f"[bold green]✔ Đã dịch xong và lưu tại:[/bold green] {vi_file}")
         return vi_file
@@ -49,7 +52,7 @@ class NovelPipeline:
             self.tts_provider = get_tts_provider()
         return TTSJobRunner(self.tts_provider, self.audio_merger, self.chunker,
                             state_dir or config.OUTPUT_DIR / ".state",
-                            self.concurrency, retries)
+                            self.concurrency, retries, progress=self.progress)
 
     def tts_only(self, vi_file: Path, output_audio: Optional[Path] = None,
                  cleanup_temp: bool = True, resume: bool = True,
@@ -158,7 +161,7 @@ class NovelPipeline:
             raise ValueError("Không có audio chương để render.")
         directory = output_dir or config.OUTPUT_DIR / "videos"
         renderer = renderer if renderer is not None else FFmpegVideoRenderer(
-            state_dir=config.OUTPUT_DIR / ".state" / "video")
+            state_dir=config.OUTPUT_DIR / ".state" / "video", progress=self.progress)
         service, story = None, None
         translation_map = {}
         if story_config is not None:
@@ -184,8 +187,10 @@ class NovelPipeline:
             output_path = Path(directory) / f"{stem}.mp4"
             thumbnail_text = None
             if service is not None:
+                emit(self.progress, "metadata", 0, 1, "tập")
                 dynamic, metadata_path = service.prepare(output_path,
                     [translation_map[Path(audio).resolve()] for audio in episode.chapter_audio], story, resume=resume)
+                emit(self.progress, "metadata", 1, 1, "tập")
                 if not title:
                     label = load_metadata(metadata_path, output_path)['title']
                 thumbnail_text = dynamic.thumbnail_text
@@ -219,7 +224,7 @@ class NovelPipeline:
             from src.publishing.youtube import YouTubePublisher
             publisher = YouTubePublisher(token_path=config.YOUTUBE_TOKEN_FILE)
         try:
-            runner = PublishingRunner(publisher, config.YOUTUBE_STATE_DIR)
+            runner = PublishingRunner(publisher, config.YOUTUBE_STATE_DIR, progress=self.progress)
             results = []
             for spec in specs:
                 result = runner.publish(spec)

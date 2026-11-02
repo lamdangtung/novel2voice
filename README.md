@@ -777,3 +777,147 @@ chưa tự cập nhật video cũ trong YouTube Studio.
 
 
 Khai báo AI cho luồng hiện tại: đặt `"contains_synthetic_media": true` trong story config hoặc metadata upload. Giá trị này được giữ khi ghép metadata và gửi thành `status.containsSyntheticMedia=true`. Với `.youtube.json` đã tạo trước đó, thêm trường này trực tiếp trước khi upload. Video đã upload cần cập nhật khai báo trong YouTube Studio; app chưa tự sửa video cũ.
+
+
+## Điều khiển từ xa bằng Telegram (CLI vẫn giữ nguyên)
+
+Bot là một cách gọi pipeline bổ sung. Không thay các lệnh `process`, `fetch`,
+`render-video`, `youtube-upload` hiện có; không mở cổng máy ra Internet vì dùng
+long polling tới Telegram. Một worker chạy tuần tự để tránh tranh tài nguyên TTS
+và checkpoint. Mỗi job của bot xử lý đúng **một chapter → một video**.
+
+### Thiết lập trên máy ở nhà
+
+1. Tạo bot qua **@BotFather** trong Telegram, dùng `/newbot` và lấy token.
+2. Lấy numeric **user ID** của tài khoản Telegram bạn dùng điều khiển. Nếu chưa
+   biết, có thể lấy `message.from.id` từ Bot API `getUpdates` sau khi gửi tin
+   nhắn riêng cho bot; không chia sẻ token hoặc URL chứa token. Không dùng
+   username hoặc số điện thoại thay user ID.
+3. Thêm vào `.env`:
+
+```ini
+TELEGRAM_BOT_TOKEN=your_bot_token
+TELEGRAM_ALLOWED_USER_IDS=123456789
+TELEGRAM_PROGRESS_INTERVAL_SECONDS=30
+```
+
+Có thể phân tách nhiều ID bằng dấu phẩy. Bot từ chối khởi động nếu thiếu token
+hoặc danh sách ID. Chỉ xử lý tin nhắn **private** từ user ID được phép; không nhận
+lệnh từ group, channel hoặc bot khác. Không cho chạy shell/đường dẫn tùy ý qua chat.
+
+4. Sao chép `configs/telegram.example.json` thành `configs/telegram.json`, chỉnh
+   URL template, ảnh nền, glossary, story config và provider. Các đường dẫn tương
+   đối trong profile tính từ thư mục chứa file JSON. Ví dụ:
+
+```json
+{
+  "stories": {
+    "wallstreet": {
+      "chapter_url_template": "https://ixdzs8.com/read/644938/p{chapter}.html",
+      "story_config": "story.example.json",
+      "background": "../assets/background.jpg",
+      "glossary": "../input/web/ixdzs8/644938/glossary.csv",
+      "translation_provider": "deepseek",
+      "tts_provider": "vieneu",
+      "upload_youtube": true,
+      "youtube_privacy": "private"
+    }
+  }
+}
+```
+
+`translation_model` là tùy chọn. `upload_youtube=false` chỉ tạo video. Privacy
+được quyết định bằng profile cục bộ (`private`, `unlisted`, `public`), không thay
+qua lệnh chat. Chuẩn bị DeepSeek session, model TTS và OAuth/channel YouTube trên
+máy trước như khi chạy CLI. `story.example.json` mặc định khai báo AI use = Yes.
+
+5. Khởi động bot:
+
+```bash
+source .venv/bin/activate
+python -m src.main telegram-bot --profiles configs/telegram.json
+```
+
+Không cần thư viện Telegram bổ sung; dùng HTTP client đã có trong project.
+Máy phải bật, không sleep, có Internet và tiến trình bot phải đang chạy để nhận
+lệnh hoặc bắt đầu job. Trên macOS, có thể dùng:
+
+```bash
+caffeinate -i python -m src.main telegram-bot --profiles configs/telegram.json
+```
+
+Đây chưa phải dịch vụ tự khởi động sau khi reboot. Không chạy nhiều bot cùng
+token hoặc tự chạy pipeline CLI ghi chung các chương/artifact khi bot đang xử lý.
+Nếu cần chuyển sang CLI, đợi job bot kết thúc rồi dừng bot.
+
+### Lệnh trong cuộc chat riêng với bot
+
+```text
+/stories
+/run wallstreet 1
+/schedule wallstreet 2 2026-11-04 09:00
+/schedule wallstreet 3 2026-11-04 10:00
+/status
+/status 1
+/cancel 2
+/retry 1
+/help
+```
+
+- `/run`: xếp hàng chạy ngay. Nếu đang có job, chờ đến lượt.
+- `/schedule`: hẹn **giờ bắt đầu xử lý**, dùng giờ Việt Nam
+  `Asia/Ho_Chi_Minh`, không phải hẹn giờ YouTube publish. Thời gian phải ở tương
+  lai. Mỗi chương có một lịch; có thể đặt nhiều lệnh với giờ riêng từng chương.
+- `/status`: xem tối đa 10 job gần nhất của bạn hoặc chi tiết một job.
+- `/cancel`: chỉ hủy job chưa bắt đầu, không kill job đang xử lý.
+- `/retry`: chạy lại job lỗi/bị ngắt, giữ ID và tái sử dụng artifact đã checkpoint.
+
+Job cùng profile/chapter đang chờ, đang chạy hoặc đã thành công sẽ không được
+lập trùng. ID job dùng trong `/status`, `/cancel`, `/retry` là ID bot trả về,
+không phải số chương. Tin nhắn Telegram được xử lý lặp lại không tạo job mới.
+
+### Tiến độ và thời gian dự kiến
+
+Bot gửi một tin nhắn tiến độ cho job, sau đó cập nhật tin đó theo bước và tối đa
+mỗi khoảng cấu hình khi có tiến độ mới (tối thiểu 10 giây giữa cập nhật định kỳ).
+Bạn vẫn có thể gửi `/status <id>` khi job đang chạy. Các bước báo:
+
+- Fetch: số chương đã lấy.
+- Dịch/glossary: số đoạn đã dịch; thời gian trích xuất glossary nằm trong bước này.
+- TTS: số đoạn audio đã tạo/tái sử dụng; cập nhật sau mỗi batch checkpoint.
+- Metadata: trạng thái bắt đầu/kết thúc lượt LLM riêng.
+- Render: thời gian video đã encode / tổng thời lượng, đọc trực tiếp từ FFmpeg.
+- Upload: số byte YouTube đã xác nhận / tổng dung lượng và phần trăm upload;
+  ETA upload dựa trên tốc độ gửi thực tế (không tính byte đã có từ phiên resume).
+
+Phần trăm **từng bước** là số liệu đo được. Phần trăm toàn luồng là tổng có
+trọng số ước tính; ETA toàn luồng dựa trên tiến độ, thời gian đã chạy và lịch sử
+các job thành công cùng profile. Chương đầu hoặc lúc chưa có dữ liệu sẽ báo đang
+thu thập; mạng chậm, độ dài chương, cache và tốc độ TTS có thể làm ETA thay đổi.
+100% byte upload chưa có nghĩa YouTube đã transcoding/xuất bản xong; bot báo hoàn
+thành khi pipeline/thumbnail đã xong và trả link YouTube.
+
+### Lưu trạng thái và vận hành
+
+`output/.state/telegram/bot.sqlite3` giữ lịch, hàng đợi, người tạo, tiến độ,
+message ID và kết quả. Có thể đổi bằng `--state-dir`. Lịch chưa chạy vẫn còn khi
+restart; lịch đã qua sẽ xếp hàng chạy khi bot khởi động lại. Bot không tự chạy lại
+job đang dở khi tiến trình chết: đánh dấu `interrupted`, chờ `/retry`.
+
+`output/.state/telegram/artifacts/<job_id>/artifacts.json` giữ đường dẫn và hash
+các file đã hoàn thành để retry không fetch/dịch/render lại những bước đã xong.
+Nếu artifact bị sửa/xóa, job dừng thay vì âm thầm tạo bản mới có thể upload trùng.
+Vẫn dùng checkpoint đoạn TTS, metadata, render và resumable upload vốn có cho
+các bước chưa hoàn tất. Giữ cả thư mục state và artifact khi sao lưu/di chuyển.
+
+Nếu Telegram mất kết nối, pipeline vẫn chạy; thông báo chờ được gửi khi kết nối
+trở lại. Khi nhấn Ctrl+C, bot ngừng nhận lệnh và chờ job hiện tại xong trước khi
+thoát. Kill cưỡng bức hoặc mất điện cần khởi động lại bot và dùng `/retry`.
+Token không được lưu trong profile/job hoặc in trong lỗi gửi qua chat.
+
+Test tự động dùng Telegram/LLM/YouTube mô phỏng; không gửi tin nhắn, không gọi
+DeepSeek hoặc upload thật. Có kiểm tra quyền, lịch theo múi giờ, chống trùng,
+khôi phục job, ETA, byte upload và tiến độ encode bằng FFmpeg thật.
+
+
+Giới hạn chữ thumbnail là giới hạn trình bày: khi LLM trả dài, code tự chuẩn hóa khoảng trắng và giữ tối đa 8 từ / 100 ký tự, không gọi LLM lại hoặc làm thất bại job chỉ vì độ dài. Thumbnail rỗng, sai kiểu hoặc chứa ký tự bị cấm vẫn báo lỗi.

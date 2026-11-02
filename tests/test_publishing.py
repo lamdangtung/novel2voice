@@ -155,6 +155,16 @@ class PublishingTests(unittest.TestCase):
         translator.assert_not_called()
 
 
+    def test_upload_progress_reports_acknowledged_bytes(self):
+        events = []
+        self.runner.progress = events.append
+        self.runner.publish(self.spec)
+        self.assertEqual(events[0].current, 0)
+        self.assertEqual(events[-1].current, self.video.stat().st_size)
+        self.assertTrue(all(event.unit == 'byte' for event in events))
+        self.assertEqual([event.current for event in events], sorted(event.current for event in events))
+
+
 def response(status, data=None, headers=None):
     result = requests.Response()
     result.status_code = status

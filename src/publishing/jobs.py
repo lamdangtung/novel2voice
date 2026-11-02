@@ -11,14 +11,16 @@ from pathlib import Path
 from PIL import Image
 
 from src.tts_jobs import file_digest
+from src.progress import emit
 from .base import UploadSpec, VideoPublisher, PublishedVideo, RetryableUploadError
 
 
 class PublishingRunner:
-    def __init__(self, publisher: VideoPublisher, state_dir: Path, *, chunk_size=8 * 1024 * 1024, retries=3):
+    def __init__(self, publisher: VideoPublisher, state_dir: Path, *, chunk_size=8 * 1024 * 1024, retries=3, progress=None):
         if chunk_size < 256 * 1024 or chunk_size % (256 * 1024) or retries < 0:
             raise ValueError('Chunk upload phải là bội 256 KiB; retries >= 0.')
         self.publisher, self.state_dir = publisher, Path(state_dir)
+        self.progress = progress
         self.chunk_size, self.retries = chunk_size, retries
 
     @contextmanager
@@ -141,6 +143,7 @@ class PublishingRunner:
                     stalled = 0
                     with video.open('rb') as stream:
                         while True:
+                            emit(self.progress, "upload", progress.offset, size, "byte")
                             if not 0 <= progress.offset <= size:
                                 raise ValueError('Server trả offset upload không hợp lệ.')
                             if progress.video_id:
@@ -180,4 +183,5 @@ class PublishingRunner:
                            (status, str(error), job_id))
                 db.commit()
                 raise
+        emit(self.progress, "upload", size, size, "byte")
         return PublishedVideo(video_id, f'https://www.youtube.com/watch?v={video_id}', channel)

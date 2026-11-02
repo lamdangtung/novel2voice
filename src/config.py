@@ -75,3 +75,8 @@ YOUTUBE_STATE_DIR = Path(os.getenv("YOUTUBE_STATE_DIR", str(OUTPUT_DIR / ".state
 
 # Separate episode metadata calls; translation flow stays unchanged.
 METADATA_MAX_INPUT_CHARS = int(os.getenv("METADATA_MAX_INPUT_CHARS", "60000"))
+
+# Telegram is optional and starts only with the telegram-bot command.
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
+TELEGRAM_ALLOWED_USER_IDS = os.getenv("TELEGRAM_ALLOWED_USER_IDS", "")
+TELEGRAM_PROGRESS_INTERVAL_SECONDS = os.getenv("TELEGRAM_PROGRESS_INTERVAL_SECONDS", "30")

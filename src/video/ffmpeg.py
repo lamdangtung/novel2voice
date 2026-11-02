@@ -13,22 +13,52 @@ from pathlib import Path
 from PIL import Image
 
 from src.tts_jobs import file_digest
+from src.progress import emit
 from .artwork import PillowThumbnailGenerator
 from .base import VideoSpec, ThumbnailGenerator
 
 
 class FFmpegVideoRenderer:
     def __init__(self, *, state_dir: Path, artwork: ThumbnailGenerator | None = None,
-                 ffmpeg='ffmpeg', ffprobe='ffprobe'):
+                 ffmpeg='ffmpeg', ffprobe='ffprobe', progress=None):
+        self.progress = progress
+        self._expected_duration = 0
         self.state_dir = Path(state_dir)
         self.artwork = artwork if artwork is not None else PillowThumbnailGenerator()
         self.ffmpeg, self.ffprobe = ffmpeg, ffprobe
 
     def _run(self, command):
-        result = subprocess.run(command, capture_output=True, text=True)
-        if result.returncode:
-            raise RuntimeError('Render video thất bại: ' + result.stderr[-4000:])
-        return result
+        if self.progress is None:
+            result = subprocess.run(command, capture_output=True, text=True)
+            if result.returncode:
+                raise RuntimeError('Render video thất bại: ' + result.stderr[-4000:])
+            return result
+        command = command[:-1] + ['-progress', 'pipe:1', '-nostats', command[-1]]
+        with tempfile.TemporaryFile(mode='w+', encoding='utf-8') as errors:
+            process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=errors, text=True)
+            try:
+                for line in process.stdout:
+                    key, _, value = line.strip().partition('=')
+                    if key == 'out_time_us':
+                        try:
+                            seconds = min(float(value) / 1_000_000, self._expected_duration)
+                        except ValueError:
+                            continue
+                        emit(self.progress, 'render', max(0, seconds), self._expected_duration, 'giây video')
+                code = process.wait()
+                if code:
+                    errors.seek(0)
+                    raise RuntimeError('Render video thất bại: ' + errors.read()[-4000:])
+                return subprocess.CompletedProcess(command, code)
+            finally:
+                if process.poll() is None:
+                    process.terminate()
+                    try:
+                        process.wait(timeout=5)
+                    except subprocess.TimeoutExpired:
+                        process.kill()
+                        process.wait()
+                process.stdout.close()
 
     def _probe(self, path):
         result = subprocess.run([self.ffprobe, '-v', 'error', '-show_format', '-show_streams',
@@ -104,6 +134,8 @@ class FFmpegVideoRenderer:
                 raise ValueError(f'File không có audio: {path}')
             durations.append(self._duration(info))
         expected = sum(durations)
+        self._expected_duration = expected
+        emit(self.progress, "render", 0, expected, "giây video")
         identity = {'schema': 1, 'inputs': [(str(p), file_digest(p)) for p in inputs],
                     'output': str(output), 'title': spec.title, 'width': spec.width,
                     'height': spec.height, 'fps': spec.fps}
@@ -121,6 +153,7 @@ class FFmpegVideoRenderer:
                     except (ValueError, KeyError, OSError, subprocess.TimeoutExpired):
                         pass
                     else:
+                        emit(self.progress, "render", expected, expected, "giây video")
                         return output
             db.execute('''INSERT INTO video_jobs(id, output, status) VALUES (?,?,'running')
                        ON CONFLICT(id) DO UPDATE SET status='running',error=NULL,
@@ -177,4 +210,5 @@ class FFmpegVideoRenderer:
                            (status, str(error), job_id))
                 db.commit()
                 raise
+        emit(self.progress, "render", expected, expected, "giây video")
         return output

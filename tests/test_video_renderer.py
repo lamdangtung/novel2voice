@@ -107,3 +107,12 @@ class RendererTests(unittest.TestCase):
             result = CliRunner().invoke(app, ['process', str(source), '--background', str(self.background)])
             self.assertEqual(result.exit_code, 0, result.output)
             pipeline.return_value.render_videos.assert_called_once()
+
+    def test_live_ffmpeg_progress_reports_processed_video_time(self):
+        events = []
+        self.renderer.progress = events.append
+        self.renderer.render(self.spec)
+        self.assertTrue(events)
+        self.assertTrue(all(event.stage == 'render' for event in events))
+        self.assertEqual(events[-1].current, events[-1].total)
+        self.assertEqual(events[-1].unit, 'giây video')

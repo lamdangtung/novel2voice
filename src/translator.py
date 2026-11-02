@@ -5,6 +5,7 @@ from src.translation_providers import TranslationProvider, get_translation_provi
 from src.glossary import Glossary
 from src.text_chunker import TextChunker
 from src import config
+from src.progress import emit
 from src.glossary_manager import GlossaryManager, ModelGlossaryExtractor
 
 logger = logging.getLogger(__name__)
@@ -35,7 +36,9 @@ class NovelTranslator:
         provider_name: Optional[str] = None,
         glossary_manager=None,
         glossary_extractor=None,
+        progress=None,
     ):
+        self.progress = progress
         self.glossary = glossary or Glossary(config.GLOSSARY_PATH)
         self.provider = provider if provider is not None else get_translation_provider(
             provider_name, model=model, api_key=api_key, base_url=base_url)
@@ -94,6 +97,7 @@ class NovelTranslator:
             chunker = TextChunker(max_chars=max_chunk_chars)
             chunks = chunker.chunk_text(text)
             translated_chunks = []
+            emit(self.progress, "translate", 0, len(chunks), "đoạn")
             limit = self.provider.conversation_limit
             if not isinstance(limit, int) or limit < 1:
                 limit = 1
@@ -108,6 +112,7 @@ class NovelTranslator:
                         translated = self.translate_chunk(chunk)
                         translated_chunks.append(translated)
                         pairs.append((chunk, translated))
+                        emit(self.progress, "translate", len(translated_chunks), len(chunks), "đoạn")
                 finally:
                     # Persist evidence from successful chunks even if a later chunk fails.
                     self.provider.reset_conversation()

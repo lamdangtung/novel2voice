@@ -7,6 +7,7 @@ from contextlib import contextmanager
 from pathlib import Path
 
 from rich.console import Console
+from src.progress import emit
 
 console = Console()
 
@@ -112,9 +113,10 @@ class JobStore:
 
 
 class TTSJobRunner:
-    def __init__(self, provider, merger, chunker, state_dir, concurrency=3, retries=2):
+    def __init__(self, provider, merger, chunker, state_dir, concurrency=3, retries=2, progress=None):
         if concurrency < 1 or retries < 0:
             raise ValueError('concurrency phải >= 1; retries phải >= 0.')
+        self.progress = progress
         self.provider = provider
         self.merger = merger
         self.chunker = chunker
@@ -151,6 +153,7 @@ class TTSJobRunner:
             previous = self.store.get(job_id)
             if (resume and previous and previous['status'] == 'completed'
                     and self.valid(output) and previous['audio_hash'] == file_digest(output)):
+                emit(self.progress, 'tts', len(chunks), len(chunks), 'đoạn')
                 console.print(f'[green]✔ Tái sử dụng chương: {source.name}[/green]')
                 return output
             self.store.execute('''INSERT INTO jobs (id, source, output, status)
@@ -172,9 +175,14 @@ class TTSJobRunner:
                         pending[keys[index]] = (chunk, path)
                 console.print(f'[cyan]>> {source.name}: {len(chunks)} đoạn, '
                               f'{len(pending)} đoạn cần tạo.[/cyan]')
+                ready = set(keys) - set(pending)
+                emit(self.progress, 'tts', sum(key in ready for key in keys), len(keys), 'đoạn')
                 items = list(pending.items())
                 for offset in range(0, len(items), self.concurrency):
-                    self._generate(job_id, items[offset:offset + self.concurrency])
+                    batch = items[offset:offset + self.concurrency]
+                    self._generate(job_id, batch)
+                    ready.update(key for key, _ in batch)
+                    emit(self.progress, 'tts', sum(key in ready for key in keys), len(keys), 'đoạn')
                 if not all(self.valid(path) for path in paths):
                     raise RuntimeError('Thiếu đoạn hoặc audio không hợp lệ trước khi ghép.')
                 self.store.status(job_id, 'merging')

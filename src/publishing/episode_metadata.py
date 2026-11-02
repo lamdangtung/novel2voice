@@ -39,19 +39,28 @@ class EpisodeMetadataGenerator(Protocol):
 def validate_dynamic(data):
     if not isinstance(data, dict) or set(data) != {'title', 'summary', 'tags', 'thumbnail_text'}:
         raise ValueError('LLM metadata cần đúng title, summary, tags, thumbnail_text.')
-    for field, maximum in (('title', 100), ('summary', 1500), ('thumbnail_text', 100)):
+    for field, maximum in (('title', 100), ('summary', 1500), ('thumbnail_text', None)):
         value = data[field]
-        if not isinstance(value, str) or not value.strip() or len(value) > maximum or any(c in value for c in '<>'):
-            raise ValueError(f'LLM metadata: {field} rỗng, sai kiểu hoặc vượt {maximum} ký tự.')
-    if len(data['thumbnail_text'].split()) > 8:
-        raise ValueError('thumbnail_text tối đa 8 từ.')
+        if not isinstance(value, str) or not value.strip() or (maximum is not None and len(value) > maximum) or any(c in value for c in '<>'):
+            raise ValueError(f'LLM metadata: {field} rỗng, sai kiểu hoặc chứa ký tự không hợp lệ.'
+                             + (f' Giới hạn {maximum} ký tự.' if maximum is not None else ''))
+    # Presentation limits are normalized locally instead of failing a completed chapter.
+    words = data['thumbnail_text'].split()[:8]
+    thumbnail = ''
+    for word in words:
+        candidate = f'{thumbnail} {word}'.strip()
+        if len(candidate) > 100:
+            if not thumbnail:
+                thumbnail = word[:100]
+            break
+        thumbnail = candidate
     if '\n' in data['title'] or '\r' in data['title']:
         raise ValueError('Tiêu đề metadata phải có một dòng.')
     if (not isinstance(data['tags'], (list, tuple)) or len(data['tags']) > 10
             or any(not isinstance(t, str) or not t.strip() or len(t) > 60 for t in data['tags'])):
         raise ValueError('LLM metadata tags cần tối đa 10 string, mỗi tag tối đa 60 ký tự.')
     return EpisodeMetadata(data['title'].strip(), data['summary'].strip(),
-                           tuple(t.strip() for t in data['tags']), data['thumbnail_text'].strip())
+                           tuple(t.strip() for t in data['tags']), thumbnail)
 
 
 class LLMEpisodeMetadataGenerator:

@@ -1,0 +1,14 @@
+{
+  "stories": {
+    "wallstreet": {
+      "chapter_url_template": "https://ixdzs8.com/read/644938/p{chapter}.html",
+      "story_config": "story.example.json",
+      "background": "../assets/background.jpg",
+      "glossary": "../input/web/ixdzs8/644938/glossary.csv",
+      "translation_provider": "deepseek",
+      "tts_provider": "vieneu",
+      "upload_youtube": true,
+      "youtube_privacy": "private"
+    }
+  }
+}

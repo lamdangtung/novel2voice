@@ -190,3 +190,23 @@ class EpisodeMetadataTests(unittest.TestCase):
         self.assertIn('An bảo vệ', spec.description)
         self.assertIn('#TruyenAudio', spec.description)
         self.assertEqual(spec.privacy, 'private')
+
+    def test_long_thumbnail_is_shortened_without_failing_metadata(self):
+        from src.publishing.episode_metadata import validate_dynamic
+        data = {'title': 'Một tiêu đề', 'summary': 'Tóm tắt hợp lệ.', 'tags': ['truyện'],
+                'thumbnail_text': '  MỘT HAI BA BỐN NĂM SÁU BẢY TÁM CHÍN MƯỜI  '}
+        result = validate_dynamic(data)
+        self.assertEqual(result.thumbnail_text, 'MỘT HAI BA BỐN NĂM SÁU BẢY TÁM')
+        self.assertEqual(result.summary, data['summary'])
+        data['thumbnail_text'] = ' '.join(['A' * 20] * 8)
+        result = validate_dynamic(data)
+        self.assertLessEqual(len(result.thumbnail_text), 100)
+        self.assertLessEqual(len(result.thumbnail_text.split()), 8)
+        data['thumbnail_text'] = 'A' * 150
+        self.assertEqual(len(validate_dynamic(data).thumbnail_text), 100)
+
+    def test_invalid_thumbnail_still_rejected(self):
+        from src.publishing.episode_metadata import validate_dynamic
+        for thumbnail in (' ', None, 42, '<script>bad</script>'):
+            with self.assertRaises(ValueError):
+                validate_dynamic({'title': 'Title', 'summary': 'Summary', 'tags': [], 'thumbnail_text': thumbnail})

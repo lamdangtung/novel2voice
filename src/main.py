@@ -25,6 +25,21 @@ logging.basicConfig(
 )
 
 
+@app.command("telegram-bot")
+def telegram_bot_command(
+    profiles_file: Path = typer.Option(Path("configs/telegram.example.json"), "--profiles", exists=True, dir_okay=False),
+    state_dir: Path = typer.Option(config.OUTPUT_DIR / ".state/telegram", "--state-dir"),
+):
+    """Điều khiển và hẹn giờ pipeline qua Telegram; các lệnh CLI cũ giữ nguyên."""
+    from src.remote.app import run_bot
+    try:
+        run_bot(profiles_file, state_dir)
+    except Exception as error:
+        from src.remote.app import safe_error
+        console.print(f"[red]✖ {safe_error(error, (config.TELEGRAM_BOT_TOKEN,))}[/red]")
+        raise typer.Exit(code=1)
+
+
 @app.command("youtube-auth")
 def youtube_auth_command():
     """Đăng nhập Google bằng OAuth Desktop app và hiển thị ID kênh."""
