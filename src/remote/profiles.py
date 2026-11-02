@@ -15,7 +15,7 @@ def load_profiles(path):
         raise ValueError('Bot config cần object stories.')
     profiles = {}
     allowed = {'chapter_url_template', 'story_config', 'background', 'glossary',
-               'translation_provider', 'translation_model', 'tts_provider', 'youtube_privacy', 'upload_youtube'}
+               'translation_provider', 'translation_model', 'tts_provider', 'youtube_privacy', 'upload_youtube', 'daily_publish_times'}
     for name, entry in data['stories'].items():
         if not re.fullmatch(r'[a-zA-Z0-9_-]{1,40}', name) or not isinstance(entry, dict) or entry.keys() - allowed:
             raise ValueError(f'Profile Telegram không hợp lệ: {name}')
@@ -42,6 +42,9 @@ def load_profiles(path):
             raise ValueError('upload_youtube phải là boolean.')
         if entry.get('youtube_privacy', 'private') not in {'private', 'unlisted', 'public'}:
             raise ValueError('youtube_privacy không hợp lệ.')
+        if 'daily_publish_times' in entry:
+            from .scheduling import validate_times
+            validate_times(entry['daily_publish_times'])
         profiles[name] = entry
     if not profiles:
         raise ValueError('Cần ít nhất một profile truyện.')

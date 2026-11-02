@@ -205,7 +205,7 @@ class NovelPipeline:
     def upload_videos(self, videos: List[Path], *, title: Optional[str] = None,
                       description: Optional[str] = None, privacy: Optional[str] = None,
                       channel_id: Optional[str] = None, tags=None, made_for_kids=None,
-                      use_thumbnail=None, metadata_file: Optional[Path] = None, publisher=None):
+                      use_thumbnail=None, metadata_file: Optional[Path] = None, publish_at=None, publisher=None):
         from src.publishing.metadata import build_upload_spec
         from src.publishing.jobs import PublishingRunner
         channel_id = channel_id if channel_id is not None else config.YOUTUBE_CHANNEL_ID
@@ -216,7 +216,7 @@ class NovelPipeline:
         specs = [build_upload_spec(video, channel_id=channel_id, title=title,
             description=description, privacy=privacy, default_privacy=config.YOUTUBE_PRIVACY, tags=tags,
             category_id=config.YOUTUBE_CATEGORY_ID, made_for_kids=made_for_kids,
-            use_thumbnail=use_thumbnail, metadata_file=metadata_file) for video in videos]
+            use_thumbnail=use_thumbnail, metadata_file=metadata_file, publish_at=publish_at) for video in videos]
         for spec in specs:
             PublishingRunner._validate(spec)
         owned = publisher is None

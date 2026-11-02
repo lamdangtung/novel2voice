@@ -19,6 +19,7 @@ class UploadSpec:
     default_audio_language: str | None = None
     contains_synthetic_media: bool | None = None
     notify_subscribers: bool = True
+    publish_at: str | None = None
 
 
 @dataclass(frozen=True)

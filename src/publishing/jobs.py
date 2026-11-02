@@ -13,6 +13,7 @@ from PIL import Image
 from src.tts_jobs import file_digest
 from src.progress import emit
 from .base import UploadSpec, VideoPublisher, PublishedVideo, RetryableUploadError
+from .schedule import parse_publish_at, normalize_publish_at, require_future
 
 
 class PublishingRunner:
@@ -81,6 +82,10 @@ class PublishingRunner:
             value = getattr(spec, field)
             if value is not None and not re.fullmatch(r'[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*', value):
                 raise ValueError(f'{field} không hợp lệ.')
+        if spec.publish_at is not None:
+            parse_publish_at(spec.publish_at)
+            if spec.privacy != 'private':
+                raise ValueError('publish_at chỉ dùng với privacy=private.')
         if not check_media:
             return
         path = Path(spec.video)
@@ -113,6 +118,8 @@ class PublishingRunner:
                 metadata_values[field] = value
         if not spec.notify_subscribers:
             metadata_values['notify_subscribers'] = False
+        if spec.publish_at is not None:
+            metadata_values['publish_at'] = normalize_publish_at(spec.publish_at)
         metadata = json.dumps(metadata_values, sort_keys=True, ensure_ascii=False)
         thumbnail_hash = file_digest(Path(spec.thumbnail)) if spec.thumbnail else None
         with self._store() as db:
@@ -135,6 +142,8 @@ class PublishingRunner:
                 if not video_id:
                     session = row['session']
                     if not session:
+                        if spec.publish_at is not None:
+                            require_future(spec.publish_at, buffer_seconds=900)
                         session = self._retry(lambda: self.publisher.start(spec, size))
                         db.execute("UPDATE uploads SET session=?,status='uploading',error=NULL WHERE id=?", (session, job_id))
                         db.commit()
@@ -158,6 +167,8 @@ class PublishingRunner:
                                 raise RuntimeError('Upload đủ byte nhưng chưa nhận video ID. Chạy lại để truy vấn trạng thái; không tạo phiên mới.')
                             db.execute("UPDATE uploads SET offset=?,status='uploading',error=NULL WHERE id=?", (progress.offset, job_id))
                             db.commit()
+                            if spec.publish_at is not None:
+                                require_future(spec.publish_at, buffer_seconds=900)
                             previous = progress.offset
                             stream.seek(previous)
                             data = stream.read(min(self.chunk_size, size - previous))

@@ -7,6 +7,7 @@ import importlib.util
 import sys
 from pathlib import Path
 from threading import Lock
+from .deepseek_scheduler import RequestScheduler, get_deepseek_scheduler
 
 _LOAD_LOCK = Lock()
 _PACKAGE = "_novel2voice_deepseek"
@@ -33,12 +34,13 @@ def _load_client_class():
 
 
 class DeepSeekTranslationProvider:
-    def __init__(self, *, model="deepseek-chat", max_chunks_per_conversation=5, client=None):
+    def __init__(self, *, model="deepseek-chat", max_chunks_per_conversation=5, client=None, scheduler: RequestScheduler | None = None):
         models = {"deepseek-chat": "default", "deepseek-expert": "expert"}
         if model not in models:
             raise ValueError(f"Model DeepSeek không hợp lệ: {model}. Chọn {', '.join(models)}.")
         if max_chunks_per_conversation < 1:
             raise ValueError("DEEPSEEK_MAX_CHUNKS_PER_CONVERSATION phải >= 1.")
+        self.scheduler = scheduler if scheduler is not None else get_deepseek_scheduler()
         self.max_chunks_per_conversation = max_chunks_per_conversation
         self._conversation_id = None
         self._chunk_count = 0
@@ -50,7 +52,7 @@ class DeepSeekTranslationProvider:
 
     def generate(self, *, system_prompt: str, user_prompt: str) -> str:
         # Serialize the whole request: the native client owns mutable session/PoW state.
-        with self._lock:
+        with self._lock, self.scheduler.slot():
             if self._client is None:
                 try:
                     client_class = _load_client_class()

@@ -7,6 +7,7 @@ import requests
 
 from .base import UploadProgress, RetryableUploadError
 from .auth import authorized_session, save_token
+from .schedule import require_future, normalize_publish_at
 
 
 class YouTubePublisher:
@@ -51,9 +52,15 @@ class YouTubePublisher:
             raise ValueError('Địa chỉ phiên upload YouTube không hợp lệ.')
 
     def start(self, spec, size):
+        if spec.publish_at is not None:
+            require_future(spec.publish_at)
+            if spec.privacy != 'private':
+                raise ValueError('Lên lịch YouTube cần privacy=private.')
         body = {'snippet': {'title': spec.title, 'description': spec.description,
                              'tags': list(spec.tags), 'categoryId': spec.category_id},
                 'status': {'privacyStatus': spec.privacy, 'selfDeclaredMadeForKids': spec.made_for_kids}}
+        if spec.publish_at is not None:
+            body['status']['publishAt'] = normalize_publish_at(spec.publish_at)
         if spec.default_language is not None:
             body['snippet']['defaultLanguage'] = spec.default_language
         if spec.default_audio_language is not None:

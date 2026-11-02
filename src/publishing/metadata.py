@@ -9,7 +9,7 @@ from .base import UploadSpec
 
 _FIELDS = {'title', 'description', 'privacy', 'tags', 'hashtags', 'category_id',
            'made_for_kids', 'thumbnail', 'default_language', 'default_audio_language',
-           'contains_synthetic_media', 'notify_subscribers', 'chapters'}
+           'contains_synthetic_media', 'notify_subscribers', 'chapters', 'publish_at'}
 
 
 def _unique_object(pairs):
@@ -114,7 +114,7 @@ def _chapter_lines(chapters, rendered):
 
 def build_upload_spec(video, *, channel_id, title=None, description=None, privacy=None,
                       tags=None, category_id='22', made_for_kids=None, use_thumbnail=None,
-                      metadata_file=None, default_privacy='private'):
+                      metadata_file=None, default_privacy='private', publish_at=None):
     video = Path(video)
     sidecar = video.with_suffix('.json')
     rendered = json.loads(sidecar.read_text(encoding='utf-8')) if sidecar.is_file() else {}
@@ -167,4 +167,5 @@ def build_upload_spec(video, *, channel_id, title=None, description=None, privac
         thumbnail=thumbnail, default_language=data.get('default_language'),
         default_audio_language=data.get('default_audio_language'),
         contains_synthetic_media=data.get('contains_synthetic_media'),
-        notify_subscribers=data.get('notify_subscribers', True))
+        notify_subscribers=data.get('notify_subscribers', True),
+        publish_at=publish_at if publish_at is not None else data.get('publish_at'))

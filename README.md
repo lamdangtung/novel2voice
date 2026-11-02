@@ -921,3 +921,134 @@ khôi phục job, ETA, byte upload và tiến độ encode bằng FFmpeg thật.
 
 
 Giới hạn chữ thumbnail là giới hạn trình bày: khi LLM trả dài, code tự chuẩn hóa khoảng trắng và giữ tối đa 8 từ / 100 ký tự, không gọi LLM lại hoặc làm thất bại job chỉ vì độ dài. Thumbnail rỗng, sai kiểu hoặc chứa ký tự bị cấm vẫn báo lỗi.
+
+
+## Telegram: lên lịch công khai 5 chương mỗi ngày
+
+```text
+/schedule-day wallstreet 10 2026-11-04
+```
+
+Lệnh tạo lịch cho chương 10–14, công khai ngày 04/11/2026 theo giờ Việt Nam:
+
+| Chương | Giờ publish |
+|---|---|
+| 10 | 06:30 |
+| 11 | 11:30 |
+| 12 | 17:00 |
+| 13 | 19:30 |
+| 14 | 22:00 |
+
+Đây là **giờ YouTube công khai**, không phải giờ bắt đầu dịch. Bot xếp các job
+chuẩn bị/upload ngay, chạy tuần tự khi worker rảnh; upload ở chế độ `private`
+và gửi `status.publishAt` cho YouTube. Khi upload xong, YouTube giữ video riêng
+tư đến giờ hẹn. Tất cả năm mốc dùng giờ Việt Nam; API nhận thời điểm UTC tương ứng.
+
+Có thể đặt nhiều ngày (tối đa 7 ngày/lệnh):
+
+```text
+/schedule-day wallstreet 10 2026-11-04 3
+```
+
+Ví dụ này tạo 15 job: chương 10–14 ngày 04/11, 15–19 ngày 05/11, 20–24 ngày
+06/11. Đây là một batch có phạm vi rõ ràng, chưa phải lịch lặp vô thời hạn.
+Lệnh vẫn dùng ID truyện đã cấu hình, không nhận URL/shell tùy ý từ Telegram.
+
+Thay các khung giờ bằng trường tùy chọn trong profile Telegram:
+
+```json
+"daily_publish_times": ["06:30", "11:30", "17:00", "19:30", "22:00"]
+```
+
+Cần đúng 5 mốc khác nhau, tăng dần, dạng HH:MM. Mặc định dùng đầu mỗi khung giờ
+bạn đề xuất. Khởi động lại bot sau khi chỉnh profile; không sửa các job đã tạo.
+
+- Bot trả danh sách ID job, số chương và ngày/giờ publish. `/status <id>` hiển
+  thị giờ YouTube công khai riêng với thời điểm job xếp hàng xử lý.
+- Phải bật `upload_youtube=true`. Lệnh mới luôn upload private + publishAt, dù
+  profile mặc định là public. Các lệnh `/run` và `/schedule` cũ giữ hành vi cũ;
+  `/schedule` vẫn là hẹn giờ **bắt đầu pipeline**.
+- Nếu có mốc đã qua, lệnh bị từ chối thay vì tự chuyển giờ/ngày hoặc bỏ mất tập.
+  Nếu bất kỳ chương nào đã có job active/thành công, cả batch bị từ chối; không
+  tạo dở vài chương. Telegram gửi lại cùng update không tạo thêm batch trùng.
+- Chọn lịch đủ sớm để toàn bộ pipeline chạy xong. Giữ khoảng đệm **ít nhất
+  15 phút** trước publish: nếu không còn đủ đệm, bot dừng trước bước tốn tài
+  nguyên/khởi tạo hoặc gửi tiếp upload, không tự đổi thành public ngay.
+  Không bảo đảm kịp lịch nếu máy, mạng hoặc YouTube xử lý chậm; nên chuẩn bị từ
+  ngày trước và kiểm tra lịch trong YouTube Studio.
+- `.youtube.json` của video được ghi `publish_at` để xem trước bằng
+  `youtube-upload --dry-run`. Trường này cần timestamp ISO 8601 có múi giờ và
+  `privacy=private`. Hẹn lịch chỉ áp dụng cho upload mới, chưa hỗ trợ đổi lịch
+  của video đã upload.
+- `/cancel` chỉ hủy job chưa chạy. Khi video đã upload kèm lịch, muốn hủy/đổi
+  lịch công khai phải vào YouTube Studio; xóa lịch/job cục bộ không hủy lịch
+  YouTube. `/retry` giữ giờ publish cũ, không tự chuyển sang ngày khác.
+- Bot báo hoàn thành nghĩa là đã upload và gửi lịch, không có nghĩa video đang
+  public hoặc YouTube đã xử lý xong. Kiểm tra xác nhận lịch trong Studio.
+
+Các khung giờ là lựa chọn vận hành của bạn, không bảo đảm thuật toán sẽ đề xuất
+tập sau hoặc đạt lượt xem cao. Sau khi có dữ liệu kênh, nên đối chiếu Analytics.
+Tài liệu [YouTube publishAt](https://developers.google.com/youtube/data/reference/rest/v3/videos).
+
+
+## Điều phối mọi lượt gọi DeepSeek native
+
+Tất cả completion DeepSeek của novel2voice đi qua interface `RequestScheduler`
+và implementation `DeepSeekScheduler`, bao gồm dịch, trích xuất glossary và
+metadata dynamic. Khóa file liên tiến trình được giữ từ trước khi khởi tạo client
+đến khi toàn bộ response được xử lý; tạo provider/client mới không bỏ qua gate.
+CLI và Telegram dùng chung state nên không có hai lượt LLM chạy đồng thời trên
+cùng gate. Giới hạn này áp dụng cho lượt completion, không chèn khoảng nghỉ giữa
+các bước giao thức nội bộ như tạo session và PoW của một completion.
+
+```ini
+DEEPSEEK_REQUEST_MIN_GAP_SECONDS=20
+DEEPSEEK_REQUEST_MAX_GAP_SECONDS=45
+DEEPSEEK_MAX_REQUESTS_PER_MINUTE=3
+DEEPSEEK_MAX_REQUESTS_PER_HOUR=60
+DEEPSEEK_COOLDOWN_BASE_SECONDS=120
+DEEPSEEK_COOLDOWN_MAX_SECONDS=1800
+```
+
+- Một request hoàn tất rồi mới cho request khác bắt đầu, nghỉ ngẫu nhiên 20–45
+  giây. Không dùng cách chỉ cách nhau thời điểm bắt đầu mà vẫn để response chồng
+  nhau. Lượt đầu tiên khi chưa có state không phải chờ; những lượt sau có thể
+  chờ thêm do cửa sổ giới hạn hoặc cooldown.
+- Giới hạn 3 lượt trong cửa sổ trượt 60 giây, 60 lượt trong cửa sổ trượt 3.600
+  giây. Tính cả request thất bại để không tạo burst khi gặp lỗi. Không tự retry
+  completion trong bộ điều phối.
+- Lỗi/gián đoạn tạo cooldown chung tăng theo chuỗi lỗi: 120 → 240 → 480… tối
+  đa 1.800 giây, cộng jitter tối đa 25 giây theo cấu hình mặc định. Nếu response
+  có `Retry-After`, chờ ít nhất thời gian server yêu cầu, kể cả khi dài hơn mức
+  cooldown cấu hình. Một request thành công đặt lại chuỗi lỗi.
+- Lưu mốc và trạng thái `inflight` trước khi gọi client. Nếu tiến trình bị kill,
+  request kế tiếp chờ thêm cooldown. JSON hỏng sẽ dừng gọi API thay vì bỏ qua
+  lịch sử giới hạn. Không có token/nội dung truyện trong state này.
+- Mỗi lần lấy slot lại có một khoảng nghỉ tối thiểu mới kể cả sau khi idle, để
+  việc thay đổi giờ hệ thống không bỏ qua khoảng cách tối thiểu. Cửa sổ phút/giờ
+  dùng thời gian hệ thống; giữ đồng hồ máy chính xác.
+
+State mặc định: `output/.state/deepseek_requests/requests.json` và `requests.lock`.
+Không xóa thư mục này để reset giới hạn hoặc xóa file lock khi đang chạy. Khi dùng
+nhiều checkout/process với cùng tài khoản, đặt `DEEPSEEK_REQUEST_STATE_DIR` thành
+**cùng một đường dẫn tuyệt đối**. Không có điều phối phân tán giữa nhiều máy qua
+các thư mục cục bộ khác nhau. Lệnh trực tiếp trong repo `infra/Deepseek-API` và
+các ứng dụng bên ngoài không đi qua gate novel2voice; không chạy chúng song song
+bằng cùng tài khoản nếu cần giữ giới hạn chung.
+
+Min gap không được thấp hơn 10 giây; max gap phải >= min gap, cooldown base phải
+>= max gap, cooldown max phải >= base. Thay cấu hình phải restart CLI/bot; vẫn
+đọc state đã lưu. Jitter là để phân tán tải, không bảo đảm dịch vụ không giới hạn
+hoặc không thay đổi chính sách. Khi upstream báo lỗi tài khoản, cần xử lý nguyên
+nhân; không tăng số tài khoản hoặc song song hóa để vượt giới hạn.
+
+Bot vẫn phản hồi `/status` khi worker đang chờ DeepSeek; log terminal có thời
+gian chờ. ETA pipeline được tính lại khi có tiến độ mới; trong lúc chờ quá lâu sẽ báo
+đang tính lại. Không thể bảo đảm các mốc publish nếu backlog/cooldown kéo dài. Nên lập lịch publish từ ngày trước.
+
+Kiểm thử dùng đồng hồ giả và client giả, kiểm tra khoảng nghỉ sau response,
+jitter, cửa sổ phút/giờ, `Retry-After`, lỗi state, phục hồi crash và hai tiến
+trình thật tranh cùng file lock. Không gọi DeepSeek thật trong bộ test.
+
+
+Hàng đợi publish ưu tiên mốc công khai gần nhất trong các job đã sẵn sàng, kể cả khi batch ngày xa hơn được tạo trước. `/run` gặp chương lỗi/bị ngắt trả lại ID job và hướng dẫn `/retry`, không tạo lần chạy mới làm mất checkpoint. `/schedule-day` cũng từ chối chương còn job lỗi/bị ngắt; cần xử lý job cũ trước.

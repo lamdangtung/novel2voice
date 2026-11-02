@@ -228,3 +228,10 @@ class BotTests(unittest.TestCase):
                 messenger.identity()
             self.assertIn('ConnectError', str(caught.exception))
             self.assertNotIn('fake-secret', str(caught.exception))
+
+    def test_run_failed_chapter_reuses_job_and_directs_user_to_retry(self):
+        self.controller.handle(update('/run story 1'))
+        self.store.finish(1, 'failed', error='failure')
+        reply = self.controller.handle(update('/run story 1', update_id=2))[1]
+        self.assertIn('/retry 1', reply)
+        self.assertEqual(len(self.store.list(42)), 1)

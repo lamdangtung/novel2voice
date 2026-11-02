@@ -15,7 +15,7 @@ class BotStore:
                 CREATE TABLE IF NOT EXISTS jobs (
                     id INTEGER PRIMARY KEY, profile TEXT NOT NULL, chapter INTEGER NOT NULL,
                     settings TEXT NOT NULL, user_id INTEGER NOT NULL, chat_id INTEGER NOT NULL,
-                    run_at REAL NOT NULL, status TEXT NOT NULL DEFAULT 'queued',
+                    run_at REAL NOT NULL, publish_at REAL, status TEXT NOT NULL DEFAULT 'queued',
                     progress TEXT NOT NULL DEFAULT '{}', result TEXT, error TEXT,
                     started_at REAL, finished_at REAL, message_id INTEGER,
                     notify INTEGER NOT NULL DEFAULT 0, updated_at REAL NOT NULL);
@@ -23,7 +23,17 @@ class BotStore:
                     WHERE status IN ('queued','running','succeeded');
                 CREATE TABLE IF NOT EXISTS receipts(update_id INTEGER PRIMARY KEY, reply TEXT NOT NULL);
                 CREATE TABLE IF NOT EXISTS settings(key TEXT PRIMARY KEY, value TEXT NOT NULL);
+                CREATE TABLE IF NOT EXISTS daily_requests (
+                    request_id INTEGER PRIMARY KEY, job_ids TEXT NOT NULL);
             ''')
+            if 'publish_at' not in {row[1] for row in db.execute('PRAGMA table_info(jobs)')}:
+                db.execute('ALTER TABLE jobs ADD COLUMN publish_at REAL')
+                from src.publishing.schedule import parse_publish_at
+                for row in db.execute('SELECT id,settings FROM jobs').fetchall():
+                    value = json.loads(row['settings']).get('youtube_publish_at')
+                    if value:
+                        db.execute('UPDATE jobs SET publish_at=? WHERE id=?', (parse_publish_at(value).timestamp(), row['id']))
+            db.execute('CREATE INDEX IF NOT EXISTS jobs_ready ON jobs(status,run_at,publish_at)')
 
     @contextmanager
     def db(self):
@@ -54,13 +64,37 @@ class BotStore:
     def enqueue(self, profile, chapter, settings, user_id, chat_id, run_at):
         with self.db() as db:
             db.execute('BEGIN IMMEDIATE')
-            existing = db.execute("SELECT * FROM jobs WHERE profile=? AND chapter=? AND status IN ('queued','running','succeeded')",
+            existing = db.execute("SELECT * FROM jobs WHERE profile=? AND chapter=? AND status IN ('queued','running','succeeded','failed','interrupted') ORDER BY CASE WHEN status IN ('queued','running','succeeded') THEN 0 ELSE 1 END,id DESC LIMIT 1",
                                   (profile, chapter)).fetchone()
             if existing:
                 return dict(existing), False
             cursor = db.execute('''INSERT INTO jobs(profile,chapter,settings,user_id,chat_id,run_at,updated_at)
                 VALUES (?,?,?,?,?,?,?)''', (profile, chapter, json.dumps(settings), user_id, chat_id, run_at, time.time()))
             return dict(db.execute('SELECT * FROM jobs WHERE id=?', (cursor.lastrowid,)).fetchone()), True
+
+    def enqueue_daily(self, request_id, profile, plan, settings, user_id, chat_id):
+        """Create all jobs atomically, or none. Re-delivery returns the same group."""
+        with self.db() as db:
+            db.execute('BEGIN IMMEDIATE')
+            prior = db.execute('SELECT job_ids FROM daily_requests WHERE request_id=?', (request_id,)).fetchone()
+            if prior:
+                ids = json.loads(prior[0])
+                return [dict(db.execute('SELECT * FROM jobs WHERE id=?', (i,)).fetchone()) for i in ids]
+            for chapter, publish_at in plan:
+                if db.execute("SELECT 1 FROM jobs WHERE profile=? AND chapter=? AND status IN ('queued','running','succeeded','failed','interrupted')",
+                              (profile, chapter)).fetchone():
+                    raise ValueError(f'Chương {chapter} đã có job; không tạo lịch một phần.')
+            rows = []
+            for chapter, publish_at in plan:
+                job_settings = dict(settings, youtube_publish_at=publish_at, youtube_privacy='private')
+                now = time.time()
+                from src.publishing.schedule import parse_publish_at
+                deadline = parse_publish_at(publish_at).timestamp()
+                cursor = db.execute('''INSERT INTO jobs(profile,chapter,settings,user_id,chat_id,run_at,updated_at,publish_at)
+                    VALUES (?,?,?,?,?,?,?,?)''', (profile, chapter, json.dumps(job_settings), user_id, chat_id, now, now, deadline))
+                rows.append(dict(db.execute('SELECT * FROM jobs WHERE id=?', (cursor.lastrowid,)).fetchone()))
+            db.execute('INSERT INTO daily_requests VALUES (?,?)', (request_id, json.dumps([row['id'] for row in rows])))
+            return rows
 
     def get(self, job_id, user_id=None):
         with self.db() as db:
@@ -75,7 +109,7 @@ class BotStore:
     def claim(self, now=None):
         with self.db() as db:
             db.execute('BEGIN IMMEDIATE')
-            row = db.execute("SELECT * FROM jobs WHERE status='queued' AND run_at<=? ORDER BY run_at,id LIMIT 1",
+            row = db.execute("SELECT * FROM jobs WHERE status='queued' AND run_at<=? ORDER BY CASE WHEN publish_at IS NULL THEN run_at ELSE publish_at END,id LIMIT 1",
                              (time.time() if now is None else now,)).fetchone()
             if row is None:
                 return None

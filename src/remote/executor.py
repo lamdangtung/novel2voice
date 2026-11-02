@@ -36,6 +36,9 @@ class FullPipelineExecutor:
                     raise ValueError(f'Artifact của job đã bị sửa/xóa ở bước {stage}; dừng để tránh tạo upload trùng.')
             return [Path(item['path']) for item in items]
 
+        if settings.get('youtube_publish_at') and not saved.get('video'):
+            from src.publishing.schedule import require_future
+            require_future(settings['youtube_publish_at'], buffer_seconds=900)
         translator, speech = None, None
         try:
             pipeline = NovelPipeline(progress=progress)
@@ -66,6 +69,12 @@ class FullPipelineExecutor:
                 videos = pipeline.render_videos(audios, Path(settings['background']), chapters_per_video=1,
                     story_config=Path(settings['story_config']), translated_files=texts,
                     metadata_provider=settings.get('translation_provider', 'deepseek'), metadata_model=settings.get('translation_model'))
+                if settings.get('youtube_publish_at'):
+                    for video in videos:
+                        metadata_path = video.with_suffix('.youtube.json')
+                        metadata = json.loads(metadata_path.read_text(encoding='utf-8'))
+                        metadata.update(privacy='private', publish_at=settings['youtube_publish_at'])
+                        atomic_json(metadata_path, metadata)
                 # Preserve upload metadata and thumbnail as well as the MP4 on retries.
                 artifacts('video_sidecars', [p for v in videos for p in
                     (v.with_suffix('.youtube.json'), v.with_suffix('.jpg')) if p.is_file()])
@@ -76,7 +85,10 @@ class FullPipelineExecutor:
             published_urls = saved.get('youtube')
             if settings.get('upload_youtube', True) and published_urls is None:
                 emit(progress, 'upload', 0, 1, 'video')
-                published = pipeline.upload_videos(videos, privacy=settings.get('youtube_privacy', 'private'))
+                options = {}
+                if settings.get('youtube_publish_at'):
+                    options = {'publish_at': settings['youtube_publish_at']}
+                published = pipeline.upload_videos(videos, privacy=settings.get('youtube_privacy', 'private'), **options)
                 published_urls = [p.url for p in published]
                 saved['youtube'] = published_urls
                 if checkpoint:

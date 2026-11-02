@@ -14,6 +14,11 @@ from src.translation_providers.factory import get_translation_provider
 
 class TranslationTests(unittest.TestCase):
     def setUp(self):
+        from contextlib import nullcontext
+        pacing = patch('src.translation_providers.deepseek.get_deepseek_scheduler')
+        scheduler = pacing.start().return_value
+        scheduler.slot.side_effect = nullcontext
+        self.addCleanup(pacing.stop)
         setting = patch('src.config.GLOSSARY_AUTO_UPDATE', False)
         setting.start()
         self.addCleanup(setting.stop)

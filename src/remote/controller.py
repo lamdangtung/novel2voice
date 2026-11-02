@@ -7,6 +7,7 @@ from zoneinfo import ZoneInfo
 HELP = '''/stories — danh sách truyện
 /run <truyện> <chương> — chạy ngay
 /schedule <truyện> <chương> YYYY-MM-DD HH:MM — hẹn giờ
+/schedule-day <truyện> <chương_đầu> YYYY-MM-DD [số_ngày] — 5 chương/ngày
 /status [job_id] — xem tiến độ/ETA
 /cancel <job_id> — hủy lịch chưa chạy
 /retry <job_id> — chạy lại job lỗi/bị ngắt
@@ -20,6 +21,10 @@ def format_job(job, timezone='Asia/Ho_Chi_Minh'):
     labels = {'queued': 'Chờ chạy', 'running': 'Đang chạy', 'succeeded': 'Hoàn thành',
               'failed': 'Lỗi', 'cancelled': 'Đã hủy', 'interrupted': 'Bị ngắt'}
     lines = [f"Job #{job['id']} · {job['profile']} · Chương {job['chapter']}", labels[job['status']]]
+    settings = json.loads(job['settings'])
+    if settings.get('youtube_publish_at'):
+        from src.publishing.schedule import parse_publish_at
+        lines.append('YouTube công khai: ' + parse_publish_at(settings['youtube_publish_at']).astimezone(ZoneInfo(timezone)).strftime('%d/%m/%Y %H:%M'))
     progress = json.loads(job['progress'])
     if job['status'] == 'queued':
         lines.append('Lịch: ' + datetime.fromtimestamp(job['run_at'], ZoneInfo(timezone)).strftime('%d/%m/%Y %H:%M'))
@@ -64,19 +69,40 @@ class BotController:
         text = message.get('text', '')
         parts = text.split() if isinstance(text, str) else []
         try:
-            reply = self._command(parts, user['id'], chat['id'])
+            reply = self._command(parts, user['id'], chat['id'], request_id=update['update_id'])
         except (ValueError, KeyError, IndexError):
             reply = 'Lệnh không hợp lệ hoặc không tìm thấy job/truyện.\n' + HELP
         self.store.receipt(update['update_id'], reply)
         return chat['id'], reply
 
-    def _command(self, parts, user, chat):
+    def _command(self, parts, user, chat, request_id=None):
         if not parts or parts[0] in {'/start', '/help'}:
             return HELP
         command = parts[0].split('@')[0]
         if command == '/stories' and len(parts) == 1:
             return '\n'.join(f"{key}: upload={entry.get('upload_youtube', True)}, privacy={entry.get('youtube_privacy', 'private')}"
                              for key, entry in self.profiles.items())
+        if command == '/schedule-day':
+            from .scheduling import plan_daily, DEFAULT_PUBLISH_TIMES
+            if len(parts) not in (4, 5) or parts[1] not in self.profiles:
+                raise ValueError()
+            profile = parts[1]
+            settings = self.profiles[profile]
+            if not settings.get('upload_youtube', True):
+                return 'Profile này tắt upload YouTube; không thể hẹn giờ publish.'
+            try:
+                plan = plan_daily(int(parts[2]), parts[3], int(parts[4]) if len(parts) == 5 else 1,
+                    times=settings.get('daily_publish_times', DEFAULT_PUBLISH_TIMES), timezone=self.timezone)
+                jobs = self.store.enqueue_daily(request_id, profile, plan, settings, user, chat)
+            except ValueError as error:
+                return str(error)
+            lines = [f'Đã tạo {len(jobs)} job, 5 chương/ngày (giờ Việt Nam).',
+                     'Bot bắt đầu chuẩn bị/upload ngay; YouTube giữ private đến giờ publish.']
+            from src.publishing.schedule import parse_publish_at
+            for job in jobs:
+                instant = parse_publish_at(json.loads(job['settings'])['youtube_publish_at'])
+                lines.append(f"#{job['id']} · Chương {job['chapter']} → " + instant.astimezone(ZoneInfo(self.timezone)).strftime('%d/%m %H:%M'))
+            return '\n'.join(lines)
         if command in {'/run', '/schedule'}:
             if len(parts) != (3 if command == '/run' else 5):
                 raise ValueError()
@@ -92,7 +118,10 @@ class BotController:
             job, created = self.store.enqueue(profile, chapter, self.profiles[profile], user, chat, run_at)
             if job['user_id'] != user:
                 return 'Chương này đã được xếp hàng hoặc xử lý bởi người dùng khác.'
-            return ('Đã tạo lịch/job.\n' if created else 'Chương này đã có job, không tạo trùng.\n') + format_job(job, self.timezone)
+            note = 'Đã tạo lịch/job.\n' if created else 'Chương này đã có job, không tạo trùng.\n'
+            if job['status'] in {'failed', 'interrupted'}:
+                note += f"Dùng /retry {job['id']} để giữ checkpoint.\n"
+            return note + format_job(job, self.timezone)
         if command == '/status' and len(parts) in (1, 2):
             if len(parts) == 2:
                 job = self.store.get(int(parts[1]), user)
