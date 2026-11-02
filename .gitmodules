@@ -1,0 +1,3 @@
+[submodule "infra/Deepseek-API"]
+    path = infra/Deepseek-API
+    url = https://github.com/lamdangtung/Deepseek-API.git
