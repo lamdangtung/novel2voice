@@ -859,7 +859,9 @@ Nếu cần chuyển sang CLI, đợi job bot kết thúc rồi dừng bot.
 /schedule wallstreet 3 2026-11-04 10:00
 /status
 /status 1
+/status page 2
 /cancel 2
+/cancel 3 4 5
 /retry 1
 /help
 ```
@@ -868,8 +870,8 @@ Nếu cần chuyển sang CLI, đợi job bot kết thúc rồi dừng bot.
 - `/schedule`: hẹn **giờ bắt đầu xử lý**, dùng giờ Việt Nam
   `Asia/Ho_Chi_Minh`, không phải hẹn giờ YouTube publish. Thời gian phải ở tương
   lai. Mỗi chương có một lịch; có thể đặt nhiều lệnh với giờ riêng từng chương.
-- `/status`: xem tối đa 10 job gần nhất của bạn hoặc chi tiết một job.
-- `/cancel`: chỉ hủy job chưa bắt đầu, không kill job đang xử lý.
+- `/status`: xem trang đầu danh sách job của bạn (10 job/trang, mới nhất trước). `/status page 2` xem trang tiếp theo; phản hồi có số trang, tổng job và lệnh chuyển trang. Danh sách hiển thị tóm tắt để tránh tin nhắn bị cắt; `/status <job_id>` xem đầy đủ tiến độ/ETA, lỗi và kết quả. Job đã `/clear` không nằm trong danh sách.
+- `/cancel <id> [id ...]`: hủy một hoặc nhiều job chưa bắt đầu, ví dụ `/cancel 3 4 5`. Báo kết quả từng ID; job đang chạy hoặc không thuộc bạn được bỏ qua. ID trùng chỉ xử lý một lần. Nếu có ID sai định dạng, toàn bộ lệnh bị từ chối trước khi hủy.
 - `/retry`: chạy lại job lỗi/bị ngắt, giữ ID và tái sử dụng artifact đã checkpoint.
 
 Job cùng profile/chapter đang chờ, đang chạy hoặc đã thành công sẽ không được
@@ -939,8 +941,9 @@ Lệnh tạo lịch cho chương 10–14, công khai ngày 04/11/2026 theo giờ
 | 13 | 19:30 |
 | 14 | 22:00 |
 
-Đây là **giờ YouTube công khai**, không phải giờ bắt đầu dịch. Bot xếp các job
-chuẩn bị/upload ngay, chạy tuần tự khi worker rảnh; upload ở chế độ `private`
+Đây là **giờ YouTube công khai**, không phải giờ bắt đầu dịch. Bot bắt đầu cho
+job vào hàng đợi xử lý trong vòng **24 giờ trước mỗi mốc publish**, không upload
+trước cả batch nhiều ngày ngay khi lập lịch. Worker chạy tuần tự; upload ở chế độ `private`
 và gửi `status.publishAt` cho YouTube. Khi upload xong, YouTube giữ video riêng
 tư đến giờ hẹn. Tất cả năm mốc dùng giờ Việt Nam; API nhận thời điểm UTC tương ứng.
 
@@ -1052,3 +1055,45 @@ trình thật tranh cùng file lock. Không gọi DeepSeek thật trong bộ tes
 
 
 Hàng đợi publish ưu tiên mốc công khai gần nhất trong các job đã sẵn sàng, kể cả khi batch ngày xa hơn được tạo trước. `/run` gặp chương lỗi/bị ngắt trả lại ID job và hướng dẫn `/retry`, không tạo lần chạy mới làm mất checkpoint. `/schedule-day` cũng từ chối chương còn job lỗi/bị ngắt; cần xử lý job cũ trước.
+
+
+### YouTube `uploadLimitExceeded`
+
+Đây là giới hạn số video kênh được phép upload, không phải lỗi phiên resumable
+hết hạn và không đồng nghĩa quota API theo đơn vị request. YouTube áp dụng giới
+hạn upload trong khoảng 24 giờ cho cả Studio, mobile và API; chuyển cách upload
+không giúp bỏ qua giới hạn. YouTube khuyến nghị thử lại sau 24 giờ.
+
+Khi bot gặp lỗi này:
+
+- Giữ bản dịch/audio/video của job lỗi và đánh dấu failed, không tự tạo upload mới.
+- Tạm giữ các job có upload YouTube trong 24 giờ; bot vẫn nhận lệnh/status và
+  job chỉ tạo video (`upload_youtube=false`) vẫn chạy được.
+- Cooldown lưu trong SQLite, không reset khi restart. Khi nâng cấp, bot cũng đọc
+  lỗi `uploadLimitExceeded` cũ để khôi phục thời gian giữ tính từ lần lỗi đó.
+- Dùng `/retry <id>` để xếp lại job lỗi với checkpoint cũ. Nó vẫn chờ cooldown và
+  cửa sổ chuẩn bị trước publish. `/status` hiển thị mốc dự kiến thử lại; 24 giờ
+  không phải cam kết chính xác thời điểm YouTube sẽ mở lại hạn mức.
+- Giờ publish không tự đổi. Nếu đến lúc chạy lại đã lỡ mốc, job báo lỗi; video
+  đã upload cần kiểm tra/đổi lịch trong YouTube Studio.
+
+Hàng đợi 5 chapter publish/ngày không còn đồng nghĩa upload trước nhiều ngày
+cùng lúc. Tuy vậy, hạn mức thực tế tùy kênh và các upload ngoài công cụ vẫn được
+YouTube tính chung, nên không thể bảo đảm tuyệt đối không chạm giới hạn.
+Nguồn: [YouTube upload errors](https://support.google.com/youtube/answer/10383400),
+[videos.insert errors](https://developers.google.com/youtube/data/reference/rest/v3/videos/insert).
+
+### Dọn danh sách job Telegram
+
+- `/clear <job_id>`: dọn job hoàn thành, đã hủy, lỗi hoặc bị ngắt của bạn.
+- `/clear finished`: dọn toàn bộ job hoàn thành và đã hủy của bạn.
+- `/clear failed`: dọn toàn bộ job lỗi và bị ngắt của bạn.
+
+Job đang chạy không thể dọn. Job đang chờ cần `/cancel <id>` trước.
+Lệnh chỉ ẩn lịch sử khỏi danh sách `/status` và ngừng thông báo tiến độ của
+những job này; không xóa tin nhắn Telegram đã gửi, TXT, audio, video, checkpoint,
+video/lịch công khai YouTube hoặc thời gian tạm dừng upload.
+Bot giữ dấu vết nội bộ cùng ID để tránh upload trùng. `/run` lại chương đã dọn
+sẽ hiện lại job cũ nếu chưa bị hủy; job lỗi/bị ngắt vẫn dùng `/retry <id>`.
+Bạn cũng có thể xem `/status <id>` và `/retry <id>` nếu còn giữ ID.
+Job đã hủy cho phép tạo job mới như trước. Không có `/clear all`.

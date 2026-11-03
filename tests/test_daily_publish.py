@@ -52,7 +52,7 @@ class DailyPublishTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 validate_times(times)
 
-    def test_command_creates_immediately_ready_jobs_with_future_publication(self):
+    def test_command_prepares_jobs_only_within_24_hours_of_publication(self):
         reply = self.controller.handle(message('/schedule-day story 10 2099-01-01'))[1]
         self.assertIn('5 job', reply)
         for job_id in range(1, 6):
@@ -60,7 +60,10 @@ class DailyPublishTests(unittest.TestCase):
             self.assertEqual(job['chapter'], job_id + 9)
             self.assertEqual(json.loads(job['settings'])['youtube_privacy'], 'private')
             self.assertIn('2099-01-01T', json.loads(job['settings'])['youtube_publish_at'])
-        self.assertIsNotNone(self.store.claim())
+        self.assertIsNone(self.store.claim())
+        first = self.store.get(1)
+        self.assertIsNone(self.store.claim(now=first['publish_at'] - 86401))
+        self.assertIsNotNone(self.store.claim(now=first['publish_at'] - 86400))
         status = self.controller.handle(message('/status 1', 2))[1]
         self.assertIn('YouTube công khai:', status)
 
@@ -121,7 +124,7 @@ class DailyPublishTests(unittest.TestCase):
     def test_nearer_publish_day_is_prioritized_over_earlier_enqueued_batch(self):
         self.controller.handle(message('/schedule-day story 20 2099-01-05', 1))
         self.controller.handle(message('/schedule-day story 10 2099-01-01', 2))
-        self.assertEqual(self.store.claim()['chapter'], 10)
+        self.assertEqual(self.store.claim(now=datetime(2099, 1, 10, tzinfo=timezone.utc).timestamp())['chapter'], 10)
 
     def test_failed_chapter_cannot_create_new_daily_attempt(self):
         job, _ = self.store.enqueue('story', 3, {}, 42, 42, 0)
@@ -142,4 +145,4 @@ class DailyPublishTests(unittest.TestCase):
                 db.execute('INSERT INTO jobs(profile,chapter,settings,user_id,chat_id,run_at,updated_at) VALUES (?,?,?,?,?,?,?)',
                     ('story', chapter, json.dumps({'youtube_publish_at': when}), 42, 42, 0, 0))
         migrated = BotStore(path)
-        self.assertEqual(migrated.claim()['chapter'], 10)
+        self.assertEqual(migrated.claim(now=datetime(2099, 1, 10, tzinfo=timezone.utc).timestamp())['chapter'], 10)

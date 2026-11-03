@@ -246,3 +246,16 @@ class OAuthTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             with self.assertRaisesRegex(ValueError, 'youtube-auth'):
                 authorized_session(Path(directory) / 'missing.json')
+
+
+class ChannelUploadLimitTests(unittest.TestCase):
+    def test_limit_error_is_actionable_not_session_expiry_or_retryable(self):
+        from src.publishing.base import UploadLimitExceeded
+        http = Mock()
+        http.request.return_value = response(400, {'error': {'errors': [{'reason': 'uploadLimitExceeded'}]}})
+        publisher = YouTubePublisher(token_path=Path('unused'), session=http)
+        with self.assertRaises(UploadLimitExceeded) as caught:
+            publisher.channel_id()
+        self.assertIn('24 giờ', str(caught.exception))
+        self.assertNotIn('phiên upload hết hạn', str(caught.exception))
+        self.assertNotIsInstance(caught.exception, RetryableUploadError)

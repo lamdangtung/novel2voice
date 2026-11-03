@@ -5,7 +5,7 @@ from urllib.parse import urlsplit
 
 import requests
 
-from .base import UploadProgress, RetryableUploadError
+from .base import UploadProgress, RetryableUploadError, UploadLimitExceeded
 from .auth import authorized_session, save_token
 from .schedule import require_future, normalize_publish_at
 
@@ -32,6 +32,10 @@ class YouTubePublisher:
                     reason = re.sub(r'[^a-zA-Z0-9_-]', '', str(details[0].get('reason', 'unknown')))[:80]
             except (ValueError, AttributeError, TypeError):
                 pass
+            if reason == 'uploadLimitExceeded':
+                raise UploadLimitExceeded('YouTube: kênh đã đạt giới hạn số video upload trong 24 giờ '
+                    '(uploadLimitExceeded). Thử lại sau 24 giờ; không phải lỗi phiên upload. '
+                    'Bản dịch/audio/video đã có vẫn được giữ.')
             raise RuntimeError(f'YouTube HTTP {response.status_code} ({reason}). '
                                'Nếu phiên upload hết hạn, kiểm tra YouTube Studio trước khi tạo lần upload mới.')
         return response

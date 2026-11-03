@@ -64,12 +64,74 @@ class BotTests(unittest.TestCase):
         self.assertEqual(self.store.claim(now=expected)['chapter'], 2)
         self.assertIsNone(self.store.claim(now=expected))
 
+    def test_status_pages_cover_all_visible_jobs_with_owner_isolation(self):
+        for chapter in range(1, 24):
+            self.store.enqueue('story', chapter, {}, 42, 42, time.time())
+        self.store.finish(2, 'succeeded')
+        self.store.clear('2', 42)
+        self.store.enqueue('other', 1, {}, 99, 99, time.time())
+        seen = []
+        for page, expected in ((1, 10), (2, 10), (3, 2)):
+            jobs, total = self.store.list_page(42, page)
+            self.assertEqual(total, 22)
+            self.assertEqual(len(jobs), expected)
+            seen.extend(job['id'] for job in jobs)
+            command = '/status' if page == 1 else f'/status page {page}'
+            reply = self.controller.handle(update(command, update_id=page))[1]
+            self.assertIn(f'Trang {page}/3 · 22 job', reply)
+            if page < 3:
+                self.assertIn(f'/status page {page + 1}', reply)
+            if page > 1:
+                self.assertIn(f'/status page {page - 1}', reply)
+            self.assertLess(len(reply), 4000)
+        self.assertEqual(seen, [i for i in range(23, 0, -1) if i != 2])
+        self.assertIn('Job #1', self.controller.handle(update('/status 1', update_id=10))[1])
+        self.assertIn('không tồn tại', self.controller.handle(update('/status page 4', update_id=11))[1])
+        self.assertIn('Số trang phải', self.controller.handle(update('/status page 0', update_id=12))[1])
+        self.assertIn('Lệnh không hợp lệ', self.controller.handle(update('/status page abc', update_id=13))[1])
+
+    def test_status_empty_and_exact_page_boundary(self):
+        self.assertEqual(self.controller.handle(update('/status'))[1], 'Chưa có job.')
+        for chapter in range(1, 11):
+            self.store.enqueue('story', chapter, {}, 42, 42, time.time())
+        reply = self.controller.handle(update('/status', update_id=2))[1]
+        self.assertIn('Trang 1/1 · 10 job', reply)
+        self.assertNotIn('Trang sau:', reply)
+        self.assertNotIn('Trang trước:', reply)
+        self.assertIn('Có 1 trang', self.controller.handle(update('/status page 2', update_id=3))[1])
+
     def test_cancel_and_owner_isolation(self):
         self.controller.handle(update('/schedule story 2 2099-01-01 09:00'))
         self.assertFalse(self.store.cancel(1, 99))
         self.assertIsNone(self.store.get(1, 99))
         self.assertTrue(self.store.cancel(1, 42))
         self.assertIsNone(self.store.claim(now=5_000_000_000))
+
+    def test_cancel_multiple_jobs_reports_each_and_deduplicates(self):
+        for chapter in range(1, 5):
+            self.store.enqueue('story', chapter, {}, 42, 42, time.time())
+        self.store.claim()
+        self.store.finish(2, 'succeeded')
+        other, _ = self.store.enqueue('other', 1, {}, 99, 99, time.time())
+        request = update(f'/cancel 1 2 3 4 4 {other["id"]} 999', update_id=10)
+        reply = self.controller.handle(request)
+        self.assertIn('#1: Đang chạy', reply[1])
+        self.assertIn('#2: Không còn chờ chạy', reply[1])
+        self.assertIn('#3: Đã hủy lịch.', reply[1])
+        self.assertEqual(reply[1].count('#4:'), 1)
+        self.assertIn(f'#{other["id"]}: Không tìm thấy job của bạn.', reply[1])
+        self.assertIn('#999: Không tìm thấy job của bạn.', reply[1])
+        self.assertEqual(self.store.get(3)['status'], 'cancelled')
+        self.assertEqual(self.store.get(4)['status'], 'cancelled')
+        self.assertEqual(self.store.get(other['id'])['status'], 'queued')
+        self.assertEqual(self.controller.handle(request), reply)
+
+    def test_cancel_invalid_batch_does_not_partially_cancel(self):
+        self.controller.handle(update('/run story 1'))
+        for index, text in enumerate(('/cancel 1 abc', '/cancel 1 -2', '/cancel 1 0'), 20):
+            self.assertIn('Lệnh không hợp lệ', self.controller.handle(update(text, update_id=index))[1])
+            self.assertEqual(self.store.get(1)['status'], 'queued')
+        self.assertIn('Đã hủy lịch.', self.controller.handle(update('/cancel 1', update_id=30))[1])
 
     def test_failed_job_retry_and_restart_interruption(self):
         self.controller.handle(update('/run story 1'))
@@ -81,6 +143,46 @@ class BotTests(unittest.TestCase):
         self.store.recover()
         self.assertEqual(self.store.get(1)['status'], 'interrupted')
         self.assertTrue(self.store.retry(1, 42))
+
+    def test_clear_guards_owner_and_retains_checkpoints(self):
+        self.controller.handle(update('/run story 1'))
+        self.assertIn('/cancel 1', self.controller.handle(update('/clear 1', update_id=2))[1])
+        self.store.claim()
+        self.assertIn('đang chạy', self.controller.handle(update('/clear 1', update_id=3))[1])
+        self.store.finish(1, 'failed', error='test')
+        checkpoint = self.root / 'artifacts' / '1' / 'artifacts.json'
+        checkpoint.parent.mkdir(parents=True)
+        checkpoint.write_text('{}')
+        self.store.pause_uploads(time.time() + 86400)
+        pause = self.store.upload_pause_until()
+        self.assertEqual(self.store.clear('failed', 99), 0)
+        reply = self.controller.handle(update('/clear 1', update_id=4))
+        self.assertIn('Đã dọn 1', reply[1])
+        self.assertEqual(reply, self.controller.handle(update('/clear 1', update_id=4)))
+        self.assertEqual(self.store.list(42), [])
+        self.assertEqual(self.store.notifications(), [])
+        self.assertTrue(checkpoint.exists())
+        self.assertEqual(self.store.upload_pause_until(), pause)
+        self.assertEqual(BotStore(self.store.path).list(42), [])
+        reply = self.controller.handle(update('/run story 1', update_id=5))[1]
+        self.assertIn('/retry 1', reply)
+        self.assertEqual(len(self.store.list(42)), 1)
+        self.assertTrue(self.store.retry(1, 42))
+
+    def test_clear_groups_and_completed_dedup(self):
+        for chapter, status in enumerate(('succeeded', 'cancelled', 'failed', 'interrupted', 'queued'), 1):
+            job, _ = self.store.enqueue('story', chapter, self.profiles['story'], 42, 42, time.time())
+            if status != 'queued':
+                self.store.finish(job['id'], status)
+        self.assertIn('Đã dọn 2', self.controller.handle(update('/clear finished'))[1])
+        self.assertEqual({j['status'] for j in self.store.list(42)}, {'failed', 'interrupted', 'queued'})
+        self.assertIn('Đã dọn 2', self.controller.handle(update('/clear failed', update_id=2))[1])
+        self.assertEqual(len(self.store.list(42)), 1)
+        self.controller.handle(update('/run story 1', update_id=3))
+        self.assertEqual(self.store.get(1)['status'], 'succeeded')
+        self.assertEqual(len(self.store.list(42)), 2)
+        self.assertEqual(self.store.clear('finished', 42), 1)
+        self.assertEqual(self.store.clear('finished', 42), 0)
 
     def test_no_cancel_running_job(self):
         self.controller.handle(update('/run story 1'))
@@ -235,3 +337,27 @@ class BotTests(unittest.TestCase):
         reply = self.controller.handle(update('/run story 1', update_id=2))[1]
         self.assertIn('/retry 1', reply)
         self.assertEqual(len(self.store.list(42)), 1)
+
+    def test_upload_limit_pauses_other_upload_jobs_persistently(self):
+        from src.publishing.base import UploadLimitExceeded
+        self.controller.handle(update('/run story 1'))
+        self.controller.handle(update('/run story 2', update_id=2))
+        self.executor.run.side_effect = UploadLimitExceeded('uploadLimitExceeded')
+        self.assertTrue(self.app.work_once())
+        self.assertEqual(self.store.get(1)['status'], 'failed')
+        self.assertGreater(self.store.upload_pause_until(), time.time() + 86000)
+        self.assertFalse(self.app.work_once())
+        self.executor.run.assert_called_once()
+        reply = self.controller.handle(update('/status 1', update_id=3))[1]
+        self.assertIn('tạm giữ upload', reply)
+        resumed = BotStore(self.root / 'bot.sqlite3')
+        self.assertIsNone(resumed.claim())
+        # Jobs that explicitly disable upload can continue.
+        resumed.enqueue('local', 1, {'upload_youtube': False}, 42, 42, 0)
+        self.assertEqual(resumed.claim()['profile'], 'local')
+
+    def test_legacy_upload_limit_error_restores_pause_on_startup(self):
+        self.controller.handle(update('/run story 1'))
+        self.store.finish(1, 'failed', error='YouTube HTTP 400 (uploadLimitExceeded).')
+        restored = BotStore(self.root / 'bot.sqlite3')
+        self.assertGreater(restored.upload_pause_until(), time.time() + 86000)

@@ -33,7 +33,17 @@ class BotStore:
                     value = json.loads(row['settings']).get('youtube_publish_at')
                     if value:
                         db.execute('UPDATE jobs SET publish_at=? WHERE id=?', (parse_publish_at(value).timestamp(), row['id']))
+            if 'cleared' not in {row[1] for row in db.execute('PRAGMA table_info(jobs)')}:
+                db.execute('ALTER TABLE jobs ADD COLUMN cleared INTEGER NOT NULL DEFAULT 0')
             db.execute('CREATE INDEX IF NOT EXISTS jobs_ready ON jobs(status,run_at,publish_at)')
+            db.execute("UPDATE jobs SET run_at=MAX(run_at,publish_at-86400) WHERE status='queued' AND publish_at IS NOT NULL")
+            # Recover a channel limit reported before this guard was installed.
+            latest = db.execute("SELECT MAX(finished_at) FROM jobs WHERE status='failed' AND error LIKE '%uploadLimitExceeded%'").fetchone()[0]
+            if latest and latest + 86400 > time.time():
+                previous = db.execute("SELECT value FROM settings WHERE key='upload_pause_until'").fetchone()
+                until = max(latest + 86400, float(previous[0]) if previous else 0)
+                db.execute("INSERT INTO settings VALUES ('upload_pause_until',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value", (str(until),))
+
 
     @contextmanager
     def db(self):
@@ -54,6 +64,17 @@ class BotStore:
         with self.db() as db:
             db.execute("INSERT INTO settings VALUES ('offset',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value", (str(offset),))
 
+    def pause_uploads(self, until):
+        with self.db() as db:
+            row = db.execute("SELECT value FROM settings WHERE key='upload_pause_until'").fetchone()
+            until = max(until, float(row[0]) if row else 0)
+            db.execute("INSERT INTO settings VALUES ('upload_pause_until',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value", (str(until),))
+
+    def upload_pause_until(self):
+        with self.db() as db:
+            row = db.execute("SELECT value FROM settings WHERE key='upload_pause_until'").fetchone()
+            return float(row[0]) if row else 0
+
     def receipt(self, update_id, reply=None):
         with self.db() as db:
             if reply is not None:
@@ -67,7 +88,8 @@ class BotStore:
             existing = db.execute("SELECT * FROM jobs WHERE profile=? AND chapter=? AND status IN ('queued','running','succeeded','failed','interrupted') ORDER BY CASE WHEN status IN ('queued','running','succeeded') THEN 0 ELSE 1 END,id DESC LIMIT 1",
                                   (profile, chapter)).fetchone()
             if existing:
-                return dict(existing), False
+                db.execute("UPDATE jobs SET cleared=0 WHERE id=?", (existing["id"],))
+                return dict(existing, cleared=0), False
             cursor = db.execute('''INSERT INTO jobs(profile,chapter,settings,user_id,chat_id,run_at,updated_at)
                 VALUES (?,?,?,?,?,?,?)''', (profile, chapter, json.dumps(settings), user_id, chat_id, run_at, time.time()))
             return dict(db.execute('SELECT * FROM jobs WHERE id=?', (cursor.lastrowid,)).fetchone()), True
@@ -91,7 +113,7 @@ class BotStore:
                 from src.publishing.schedule import parse_publish_at
                 deadline = parse_publish_at(publish_at).timestamp()
                 cursor = db.execute('''INSERT INTO jobs(profile,chapter,settings,user_id,chat_id,run_at,updated_at,publish_at)
-                    VALUES (?,?,?,?,?,?,?,?)''', (profile, chapter, json.dumps(job_settings), user_id, chat_id, now, now, deadline))
+                    VALUES (?,?,?,?,?,?,?,?)''', (profile, chapter, json.dumps(job_settings), user_id, chat_id, max(now, deadline - 24 * 3600), now, deadline))
                 rows.append(dict(db.execute('SELECT * FROM jobs WHERE id=?', (cursor.lastrowid,)).fetchone()))
             db.execute('INSERT INTO daily_requests VALUES (?,?)', (request_id, json.dumps([row['id'] for row in rows])))
             return rows
@@ -103,14 +125,31 @@ class BotStore:
             return dict(row) if row else None
 
     def list(self, user_id):
+        return self.list_page(user_id, 1)[0]
+
+    def list_page(self, user_id, page=1, page_size=10):
+        if page < 1 or not 1 <= page_size <= 10:
+            raise ValueError('Trang phải >= 1; kích thước trang từ 1 đến 10.')
         with self.db() as db:
-            return [dict(r) for r in db.execute('SELECT * FROM jobs WHERE user_id=? ORDER BY id DESC LIMIT 10', (user_id,))]
+            # Count and rows share one snapshot while the worker updates jobs.
+            db.execute('BEGIN')
+            total = db.execute('SELECT COUNT(*) FROM jobs WHERE user_id=? AND cleared=0', (user_id,)).fetchone()[0]
+            pages = max(1, (total + page_size - 1) // page_size)
+            if page > pages:
+                return [], total
+            rows = db.execute('SELECT * FROM jobs WHERE user_id=? AND cleared=0 ORDER BY id DESC LIMIT ? OFFSET ?',
+                              (user_id, page_size, (page - 1) * page_size))
+            return [dict(row) for row in rows], total
 
     def claim(self, now=None):
         with self.db() as db:
             db.execute('BEGIN IMMEDIATE')
-            row = db.execute("SELECT * FROM jobs WHERE status='queued' AND run_at<=? ORDER BY CASE WHEN publish_at IS NULL THEN run_at ELSE publish_at END,id LIMIT 1",
-                             (time.time() if now is None else now,)).fetchone()
+            current = time.time() if now is None else now
+            pause = db.execute("SELECT value FROM settings WHERE key='upload_pause_until'").fetchone()
+            pause_until = float(pause[0]) if pause else 0
+            candidates = db.execute("SELECT * FROM jobs WHERE status='queued' AND run_at<=? ORDER BY CASE WHEN publish_at IS NULL THEN run_at ELSE publish_at END,id", (current,)).fetchall()
+            row = next((candidate for candidate in candidates
+                        if pause_until <= current or not json.loads(candidate['settings']).get('upload_youtube', True)), None)
             if row is None:
                 return None
             db.execute("UPDATE jobs SET status='running',started_at=?,updated_at=?,notify=1 WHERE id=?",
@@ -132,6 +171,20 @@ class BotStore:
             return db.execute("UPDATE jobs SET status='cancelled',updated_at=? WHERE id=? AND user_id=? AND status='queued'",
                               (time.time(), job_id, user_id)).rowcount == 1
 
+    def clear(self, target, user_id):
+        """Hide terminal jobs; retain IDs and checkpoints for safe deduplication."""
+        groups = {'finished': ('succeeded', 'cancelled'),
+                  'failed': ('failed', 'interrupted')}
+        statuses = groups.get(target, ('succeeded', 'cancelled', 'failed', 'interrupted'))
+        placeholders = ','.join('?' for _ in statuses)
+        query = f'UPDATE jobs SET cleared=1,notify=0 WHERE user_id=? AND cleared=0 AND status IN ({placeholders})'
+        params = [user_id, *statuses]
+        if target not in groups:
+            query += ' AND id=?'
+            params.append(int(target))
+        with self.db() as db:
+            return db.execute(query, params).rowcount
+
     def recover(self):
         with self.db() as db:
             db.execute("UPDATE jobs SET status='interrupted',error='Bot đã dừng giữa chừng; dùng /retry để chạy lại.',notify=1 WHERE status='running'")
@@ -146,13 +199,14 @@ class BotStore:
                                    (row['profile'], row['chapter'])).fetchone()
             if duplicate:
                 return False
-            db.execute("UPDATE jobs SET status='queued',run_at=?,progress='{}',error=NULL,result=NULL,started_at=NULL,finished_at=NULL,notify=0 WHERE id=?",
-                       (time.time(), job_id))
+            run_at = max(time.time(), row['publish_at'] - 86400 if row['publish_at'] else 0)
+            db.execute("UPDATE jobs SET status='queued',cleared=0,run_at=?,progress='{}',error=NULL,result=NULL,started_at=NULL,finished_at=NULL,notify=0 WHERE id=?",
+                       (run_at, job_id))
             return True
 
     def notifications(self):
         with self.db() as db:
-            return [dict(r) for r in db.execute('SELECT * FROM jobs WHERE notify=1 ORDER BY id LIMIT 20')]
+            return [dict(r) for r in db.execute('SELECT * FROM jobs WHERE notify=1 AND cleared=0 ORDER BY id LIMIT 20')]
 
     def notified(self, job_id, message_id, version):
         with self.db() as db:

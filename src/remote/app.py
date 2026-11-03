@@ -7,6 +7,7 @@ from contextlib import contextmanager
 from pathlib import Path
 
 from src import config
+from src.publishing.base import UploadLimitExceeded
 from .controller import BotController, format_job
 from .executor import FullPipelineExecutor, ProgressTracker
 from .profiles import load_profiles
@@ -46,6 +47,10 @@ class BotApplication:
             settings['_job_dir'] = str(self.store.path.parent / 'artifacts' / str(job['id']))
             result = self.executor.run(settings, job['chapter'], tracker)
             self.store.finish(job['id'], 'succeeded', result=result)
+        except UploadLimitExceeded as error:
+            self.store.pause_uploads(time.time() + 24 * 3600)
+            self.store.finish(job['id'], 'failed', error=safe_error(error, self.secrets)
+                + f" Dùng /retry {job['id']} để xếp lại; job chờ hết cooldown trước khi chạy.")
         except BaseException as error:
             self.store.finish(job['id'], 'interrupted' if isinstance(error, (KeyboardInterrupt, SystemExit)) else 'failed',
                               error=safe_error(error, self.secrets))

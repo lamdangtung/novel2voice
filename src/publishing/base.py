@@ -36,6 +36,11 @@ class PublishedVideo:
     channel_id: str
 
 
+class UploadLimitExceeded(RuntimeError):
+    """Channel upload allowance exhausted; not a resumable-session failure."""
+    pass
+
+
 class RetryableUploadError(RuntimeError):
     pass
 
