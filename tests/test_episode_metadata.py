@@ -43,6 +43,25 @@ class EpisodeMetadataTests(unittest.TestCase):
         self.assertEqual(result['privacy'], 'private')
         self.assertNotIn('thumbnail_text', result)
 
+    def test_youtube_title_uses_chapter_number_without_spoken_heading(self):
+        story = dict(self.story, story_title='Xuyên không 1985: Phố Wall')
+        dynamic = EpisodeMetadata('Chiêu mộ quân cờ trên sân thượng', 'Tóm tắt.', (), 'Quân cờ')
+        chapter = ChapterText('chapter_15_vi.txt', 'Chương 15: Quân cờ', 'Chương 15: Quân cờ\nNội dung')
+        result = MetadataComposer().compose(story, dynamic, (chapter,))
+        self.assertEqual(result['title'], 'Xuyên không 1985: Phố Wall | Chiêu mộ quân cờ trên sân thượng | Chương 15')
+        self.assertEqual(chapter.title, 'Chương 15: Quân cờ')
+        last = ChapterText('chapter_17_vi.txt', 'Chương 17: Một diễn biến khác', 'text')
+        result = MetadataComposer().compose(story, dynamic, (chapter, last))
+        self.assertTrue(result['title'].endswith('Chương 15–17'))
+        self.assertNotIn('Một diễn biến khác', result['title'])
+
+    def test_chapter_number_fallback_to_source_filename(self):
+        for filename, heading in (('ixdzs8_644938_15_vi.txt', 'Lời mở đầu'),
+                                  ('chapter_15_vi.txt', 'Chapter 15: A new beginning'),
+                                  ('other.txt', '第15章 棋子')):
+            result = MetadataComposer().compose(self.story, self.dynamic, (ChapterText(filename, heading, 'text'),))
+            self.assertTrue(result['title'].endswith('Chương 15'), result['title'])
+
     def test_cache_invalidation_and_generated_upload_discovery(self):
         service = EpisodeMetadataService(self.generator)
         dynamic, path = service.prepare(self.video, [self.text], self.story)
@@ -190,6 +209,15 @@ class EpisodeMetadataTests(unittest.TestCase):
         self.assertIn('An bảo vệ', spec.description)
         self.assertIn('#TruyenAudio', spec.description)
         self.assertEqual(spec.privacy, 'private')
+
+    def test_long_llm_and_composed_title_stay_within_youtube_limit(self):
+        from src.publishing.episode_metadata import validate_dynamic, MetadataComposer
+        dynamic = validate_dynamic({'title': 'Một diễn biến hấp dẫn ' * 20, 'summary': 'Tóm tắt.',
+                                    'tags': [], 'thumbnail_text': 'Biến động'})
+        self.assertLessEqual(len(dynamic.title), 100)
+        chapters = (ChapterText('chapter.txt', 'Chương 21: ' + 'Diễn biến ' * 15, 'Nội dung'),)
+        result = MetadataComposer().compose(self.story, dynamic, chapters)
+        self.assertLessEqual(len(result['title']), 100)
 
     def test_long_thumbnail_is_shortened_without_failing_metadata(self):
         from src.publishing.episode_metadata import validate_dynamic

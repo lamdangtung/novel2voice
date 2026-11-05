@@ -6,6 +6,7 @@ import subprocess
 from pathlib import Path
 
 from .base import UploadSpec
+from .title import normalize_title
 
 _FIELDS = {'title', 'description', 'privacy', 'tags', 'hashtags', 'category_id',
            'made_for_kids', 'thumbnail', 'default_language', 'default_audio_language',
@@ -122,6 +123,7 @@ def build_upload_spec(video, *, channel_id, title=None, description=None, privac
     effective_file = metadata_file if metadata_file is not None else (generated if generated.is_file() else None)
     data = load_metadata(effective_file, video)
     resolved_title = title if title is not None else data.get('title', rendered.get('title') or video.stem)
+    resolved_title = normalize_title(resolved_title)
     resolved_description = description if description is not None else data.get('description', '')
     if data.get('chapters') and not isinstance(rendered.get('duration_seconds'), (int, float)):
         probe = subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'format=duration',

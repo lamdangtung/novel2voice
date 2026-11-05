@@ -850,6 +850,33 @@ caffeinate -i python -m src.main telegram-bot --profiles configs/telegram.json
 token hoặc tự chạy pipeline CLI ghi chung các chương/artifact khi bot đang xử lý.
 Nếu cần chuyển sang CLI, đợi job bot kết thúc rồi dừng bot.
 
+### Thao tác bằng menu và nút bấm
+
+Sau khi khởi động lại bot, gửi `/menu` hoặc `/start` để mở bảng điều khiển.
+Bot đăng ký menu lệnh Telegram cho các chat được cho phép; nếu đăng ký tạm lỗi,
+bạn vẫn có thể gõ `/menu`.
+
+- **Chạy / hẹn giờ**: chọn truyện, nhập chương; hẹn giờ thì nhập thêm ngày giờ bắt đầu xử lý.
+- **5 chương/ngày** hoặc `/plan`: chọn truyện, chương đầu, ngày đầu và số ngày; xem toàn bộ giờ công khai trước khi xác nhận.
+- **Job & tiến độ**: lọc job đang chờ/chạy, cần xử lý hoặc đã kết thúc; dùng nút chuyển trang và mở chi tiết.
+- **Chi tiết job**: nút Cập nhật, Hủy, Thử lại, Đổi giờ publish, Dọn hoặc mở video tùy trạng thái.
+- **Dọn lịch sử** và **Hủy nhiều job**: xem lại các job/nhóm được chọn rồi xác nhận.
+
+Các luồng bằng nút đều có bước xác nhận trước khi tạo lịch hoặc thay đổi job.
+Nhập sai sẽ được hướng dẫn sửa tại bước đó. Dùng Quay lại để sửa thông tin;
+`/abort` hoặc Về menu để bỏ thao tác đang nhập. Mở danh sách/chi tiết job,
+truyện, hướng dẫn hoặc gửi một lệnh gõ tay cũng thoát bản nháp cũ.
+Bản nháp được giữ khi khởi động lại bot và hết hạn sau 30 phút không cập nhật.
+Nút cũ không tạo thêm job. Lệnh gõ tay đầy đủ bên dưới vẫn thực hiện trực tiếp.
+`/new` mở luồng chạy/hẹn giờ; `/run`, `/schedule`, `/schedule-day`, `/cancel`,
+`/retry`, `/clear` không có tham số cũng mở màn hình hướng dẫn tương ứng.
+
+Giờ bắt đầu xử lý và giờ công khai YouTube được ghi riêng, theo giờ Việt Nam.
+Khi mở menu từ thẻ tiến độ, bot mở tin nhắn riêng để cập nhật chạy nền không
+làm mất màn hình đang thao tác. Tin nhắn dài được chia phần, nút nằm ở phần cuối.
+
+Chi tiết review và thiết kế: [Telegram UX review](docs/telegram-ux-review.md).
+
 ### Lệnh trong cuộc chat riêng với bot
 
 ```text
@@ -985,7 +1012,7 @@ bạn đề xuất. Khởi động lại bot sau khi chỉnh profile; không s�
   của video đã upload.
 - `/cancel` chỉ hủy job chưa chạy. Khi video đã upload kèm lịch, muốn hủy/đổi
   lịch công khai phải vào YouTube Studio; xóa lịch/job cục bộ không hủy lịch
-  YouTube. `/retry` giữ giờ publish cũ, không tự chuyển sang ngày khác.
+  YouTube. `/retry <id>` giữ giờ publish cũ; `/retry <id> YYYY-MM-DD HH:MM` đặt giờ mới cho job lỗi/bị ngắt.
 - Bot báo hoàn thành nghĩa là đã upload và gửi lịch, không có nghĩa video đang
   public hoặc YouTube đã xử lý xong. Kiểm tra xác nhận lịch trong Studio.
 
@@ -1097,3 +1124,62 @@ Bot giữ dấu vết nội bộ cùng ID để tránh upload trùng. `/run` l�
 sẽ hiện lại job cũ nếu chưa bị hủy; job lỗi/bị ngắt vẫn dùng `/retry <id>`.
 Bạn cũng có thể xem `/status <id>` và `/retry <id>` nếu còn giữ ID.
 Job đã hủy cho phép tạo job mới như trước. Không có `/clear all`.
+
+### Retry khi lỡ giờ publish
+
+Dùng `/retry <job_id> YYYY-MM-DD HH:MM` để đặt giờ công khai mới theo giờ Việt Nam,
+ví dụ `/retry 20 2026-11-06 19:30`. Giờ mới phải cách hiện tại hơn 15 phút;
+nên chừa đủ thời gian upload và thời gian tạm giữ do giới hạn kênh.
+Chỉ áp dụng cho job lỗi/bị ngắt của bạn. Bot giữ ID, dùng lại TXT/audio/video,
+đặt privacy private và xếp hàng theo cửa sổ chuẩn bị 24 giờ. Cooldown vẫn được giữ.
+`/retry <id>` giữ nguyên lịch; nếu lịch đã trễ, bot hướng dẫn đổi lịch trước khi xếp hàng.
+
+Nếu chưa có phiên upload, bot dùng lịch mới ngay. Nếu đang upload dở, bot truy vấn
+YouTube trước: chỉ khi server xác nhận chưa hoàn thành mới thay phiên và tải lại
+video theo lịch mới. Nếu đã hoàn thành hoặc phiên cũ hết hạn/không xác định được
+trạng thái, bot dừng để tránh bản trùng; cần kiểm tra và đổi lịch trong YouTube Studio.
+Metadata khác ngoài giờ publish vẫn bị chặn thay đổi khi đã có phiên upload.
+
+### Chạy hoặc retry ngay một job
+
+Trong chi tiết job, chọn **Chạy ngay** (job đang chờ) hoặc **Retry ngay** (job lỗi/bị ngắt),
+xem lại và xác nhận. Lệnh tương đương thực hiện trực tiếp:
+
+```text
+/now 10
+```
+
+Thao tác giữ ID và checkpoint, ưu tiên job trước hàng đợi thường, bỏ giờ chờ,
+cửa sổ chuẩn bị 24 giờ, cooldown upload YouTube, giờ publish và đệm 15 phút.
+Video upload ở chế độ **private, không có lịch công khai**; đặt lịch trong Studio sau.
+Giới hạn gọi LLM vẫn được giữ. Nếu máy đang chạy job khác, đợi job đó kết thúc;
+không tạo worker song song. Các job thường vẫn tuân thủ cooldown đang có.
+Quyền sở hữu, kiểm tra file và cơ chế chống upload trùng vẫn hoạt động.
+Không chạy lại job đang chạy hoặc đã hoàn thành. Profile tắt upload vẫn chỉ tạo video.
+
+Nếu video sidecar còn giờ publish cũ, chế độ này bỏ qua lịch khi tạo upload spec,
+không sửa sidecar đã checkpoint. Với phiên upload dở, chỉ tạo phiên thay thế khi
+YouTube xác nhận phiên cũ chưa hoàn thành; phiên hết hạn/không rõ trạng thái vẫn
+cần kiểm tra Studio. Job đã upload xong không được upload trùng.
+YouTube vẫn có thể từ chối do giới hạn thực tế; bot báo lỗi và không tự retry liên tục.
+Cờ chạy ngay được giữ qua restart. `/retry <id>` thông thường trở lại chính sách
+hàng đợi/cooldown bình thường; muốn tiếp tục bỏ qua, dùng `/now <id>` hoặc Retry ngay.
+
+### Giới hạn tiêu đề YouTube
+
+Tiêu đề cuối cùng được chuẩn hóa Unicode tiếng Việt (NFC), gộp khoảng trắng và
+rút gọn về tối đa **100 ký tự**, không thêm dấu ba chấm. Dấu `…` hoặc `...` có sẵn
+trong đầu vào cũng được loại bỏ. Quy tắc dùng chung cho metadata
+LLM, JSON ngoài, JSON đã cache, tham số CLI và tiêu đề từ video/tên file.
+Ưu tiên cắt tại ranh giới từ. Tiêu đề rỗng hoặc chứa `<`, `>` vẫn bị từ chối.
+Upload giữ bước kiểm tra cuối; không cần gọi thêm LLM để rút ngắn title.
+File metadata/chapter đã checkpoint không bị sửa chỉ để rút gọn tiêu đề upload.
+Nếu video đã có phiên upload với tiêu đề khác, cơ chế chống tạo bản trùng vẫn
+chặn thay metadata và hướng dẫn kiểm tra YouTube Studio.
+
+Giới hạn chính thức: [YouTube video snippet.title](https://developers.google.com/youtube/data/reference/rest/v3/videos).
+
+Tiêu đề YouTube tự sinh dùng dạng `Tên truyện | Điểm hấp dẫn của tập | Chương 15`;
+video nhiều chương dùng `Chương 15–17`. Không lặp tên chương sau số chương.
+Nội dung TXT/audio và heading chương vẫn được giữ. Format này áp dụng khi ghép
+metadata mới; metadata đã cache/biên tập và video đã upload không tự bị ghi đè.

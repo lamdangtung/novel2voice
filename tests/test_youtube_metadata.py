@@ -29,6 +29,36 @@ class YouTubeMetadataTests(unittest.TestCase):
     def build(self, **kwargs):
         return build_upload_spec(self.video, channel_id='channel', metadata_file=self.config, **kwargs)
 
+    def test_long_titles_from_every_source_are_shortened_before_upload(self):
+        long_title = 'Một tiêu đề tiếng Việt rất dài ' * 8
+        self.write({'title': long_title})
+        self.assertLessEqual(len(self.build().title), 100)
+        self.assertLessEqual(len(self.build(title=long_title).title), 100)
+        self.write({})
+        self.video.with_suffix('.json').write_text(json.dumps({'title': long_title}))
+        self.assertLessEqual(len(self.build().title), 100)
+        self.video.with_suffix('.youtube.json').write_text(json.dumps({'title': long_title}))
+        spec = build_upload_spec(self.video, channel_id='channel')
+        self.assertLessEqual(len(spec.title), 100)
+        self.assertNotIn('…', spec.title)
+        self.assertNotIn('...', spec.title)
+        from src.publishing.jobs import PublishingRunner
+        PublishingRunner._validate(spec, check_media=False)
+
+    def test_title_boundary_unicode_and_invalid_values(self):
+        import unicodedata
+        from src.publishing.title import normalize_title
+        self.assertEqual(normalize_title('Một… câu... chuyện'), 'Một câu chuyện')
+        self.assertEqual(normalize_title('Tiêu đề...'), 'Tiêu đề')
+        exact = 'Á' * 100
+        self.assertEqual(normalize_title(exact), exact)
+        self.assertEqual(normalize_title(unicodedata.normalize('NFD', exact)), exact)
+        self.assertEqual(len(normalize_title('A' * 101)), 100)
+        self.assertEqual(normalize_title('  Tiêu đề\n nhiều   khoảng trắng '), 'Tiêu đề nhiều khoảng trắng')
+        for value in ('', ' ', '<bad>', '...', '…', None, 42):
+            with self.assertRaises(ValueError):
+                normalize_title(value)
+
     def test_precedence_and_false_values(self):
         self.write({'defaults': {'title': 'Default', 'privacy': 'unlisted', 'made_for_kids': True,
                                 'tags': ['default']},
@@ -96,7 +126,7 @@ class YouTubeMetadataTests(unittest.TestCase):
         self.assertEqual(json.loads(result.output)['privacy'], 'private')
 
     def test_invalid_metadata_fails_before_oauth_or_upload(self):
-        self.write({'title': 'a' * 101})
+        self.write({'title': '<invalid>'})
         with patch('src.publishing.youtube.YouTubePublisher') as publisher:
             with self.assertRaises(ValueError):
                 NovelPipeline().upload_videos([self.video], channel_id='channel', metadata_file=self.config)

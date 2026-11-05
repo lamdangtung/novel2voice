@@ -69,6 +69,72 @@ class PublishingTests(unittest.TestCase):
         self.publisher = FakePublisher()
         self.runner = PublishingRunner(self.publisher, self.root / 'state', chunk_size=256 * 1024)
 
+    def test_reschedule_incomplete_session_after_server_confirmation(self):
+        spec = replace(self.spec, publish_at='2099-01-01T00:00:00Z')
+        self.publisher.interrupt = True
+        with self.assertRaises(KeyboardInterrupt):
+            self.runner.publish(spec)
+        original_start = self.publisher.start
+        def start_new(spec, size):
+            self.publisher.offset = 0
+            return original_start(spec, size)
+        self.publisher.start = start_new
+        result = self.runner.publish(replace(spec, publish_at='2099-01-02T00:00:00Z'))
+        self.assertEqual(result.video_id, ID)
+        self.assertEqual(self.publisher.starts, 2)
+
+    def test_reschedule_lost_completion_never_starts_duplicate(self):
+        spec = replace(self.spec, publish_at='2099-01-01T00:00:00Z')
+        self.publisher.interrupt = True
+        with self.assertRaises(KeyboardInterrupt):
+            self.runner.publish(spec)
+        self.publisher.offset = self.video.stat().st_size
+        with self.assertRaisesRegex(ValueError, 'Video đã upload'):
+            self.runner.publish(replace(spec, publish_at='2099-01-02T00:00:00Z'))
+        self.assertEqual(self.publisher.starts, 1)
+        with sqlite3.connect(self.root / 'state' / 'uploads.sqlite3') as db:
+            self.assertEqual(db.execute('SELECT video_id FROM uploads').fetchone()[0], ID)
+
+    def test_reschedule_ambiguous_session_keeps_checkpoint(self):
+        spec = replace(self.spec, publish_at='2099-01-01T00:00:00Z')
+        self.publisher.interrupt = True
+        with self.assertRaises(KeyboardInterrupt):
+            self.runner.publish(spec)
+        self.publisher.query = Mock(side_effect=RuntimeError('expired session'))
+        with self.assertRaisesRegex(RuntimeError, 'expired session'):
+            self.runner.publish(replace(spec, publish_at='2099-01-02T00:00:00Z'))
+        self.assertEqual(self.publisher.starts, 1)
+        with sqlite3.connect(self.root / 'state' / 'uploads.sqlite3') as db:
+            self.assertEqual(db.execute('SELECT session FROM uploads').fetchone()[0], SESSION)
+
+    def test_manual_now_removes_old_schedule_from_incomplete_upload(self):
+        scheduled = replace(self.spec, publish_at='2099-01-01T00:00:00Z')
+        self.publisher.interrupt = True
+        with self.assertRaises(KeyboardInterrupt):
+            self.runner.publish(scheduled)
+        original_start = self.publisher.start
+        def start_new(spec, size):
+            self.assertIsNone(spec.publish_at)
+            self.assertEqual(spec.privacy, 'private')
+            self.publisher.offset = 0
+            return original_start(spec, size)
+        self.publisher.start = start_new
+        self.runner.publish(self.spec)
+        self.assertEqual(self.publisher.starts, 2)
+
+    def test_pipeline_now_ignores_sidecar_schedule_without_modifying_file(self):
+        metadata = self.root / 'video.youtube.json'
+        metadata.write_text(json.dumps({'title': 'Title', 'privacy': 'private', 'publish_at': '2020-01-01T00:00:00Z'}))
+        original = metadata.read_bytes()
+        self.publisher.start = Mock(wraps=self.publisher.start)
+        with patch('src.config.YOUTUBE_STATE_DIR', self.root / 'manual-state'):
+            NovelPipeline().upload_videos([self.video], channel_id='channel', metadata_file=metadata,
+                                         publisher=self.publisher, clear_publish_schedule=True)
+        spec = self.publisher.start.call_args.args[0]
+        self.assertIsNone(spec.publish_at)
+        self.assertEqual(spec.privacy, 'private')
+        self.assertEqual(metadata.read_bytes(), original)
+
     def test_success_and_deduplication_across_paths(self):
         result = self.runner.publish(self.spec)
         self.assertEqual(result.video_id, ID)

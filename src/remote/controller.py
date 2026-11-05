@@ -4,7 +4,11 @@ import time
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-HELP = '''/stories — danh sách truyện
+HELP = '''/menu — bảng điều khiển bằng nút bấm
+/new — hướng dẫn chạy/hẹn giờ một chương
+/plan — hướng dẫn lên lịch 5 chương/ngày
+/abort — thoát thao tác đang nhập
+/stories — danh sách truyện
 /run <truyện> <chương> — chạy ngay
 /schedule <truyện> <chương> YYYY-MM-DD HH:MM — hẹn giờ
 /schedule-day <truyện> <chương_đầu> YYYY-MM-DD [số_ngày] — 5 chương/ngày
@@ -12,7 +16,8 @@ HELP = '''/stories — danh sách truyện
 /status page <số_trang> — xem trang khác
 /status <job_id> — chi tiết tiến độ/ETA
 /cancel <job_id> [job_id ...] — hủy một hoặc nhiều lịch chưa chạy
-/retry <job_id> — chạy lại job lỗi/bị ngắt
+/now <job_id> — chạy/retry ngay, bỏ lịch và cooldown; upload private
+/retry <job_id> [YYYY-MM-DD HH:MM] — chạy lại, tùy chọn đổi giờ publish
 /clear <job_id|finished|failed> — dọn lịch sử job
 Mỗi job xử lý một chương thành một video. Lịch là giờ Việt Nam (Asia/Ho_Chi_Minh).'''
 
@@ -28,10 +33,12 @@ def format_job(job, timezone='Asia/Ho_Chi_Minh'):
     if settings.get('youtube_publish_at'):
         from src.publishing.schedule import parse_publish_at
         lines.append('YouTube công khai: ' + parse_publish_at(settings['youtube_publish_at']).astimezone(ZoneInfo(timezone)).strftime('%d/%m/%Y %H:%M'))
+    if settings.get('manual_upload_now'):
+        lines.append('Chạy ngay: bỏ lịch/cooldown upload; video private, không đặt lịch. Vẫn giữ giới hạn LLM.')
     progress = json.loads(job['progress'])
     if job['status'] == 'queued':
         lines.append('Lịch: ' + datetime.fromtimestamp(job['run_at'], ZoneInfo(timezone)).strftime('%d/%m/%Y %H:%M'))
-        lines.append('Job đến giờ sẽ xếp hàng nếu máy còn bận.')
+        lines.append('Đây là giờ bắt đầu xử lý; job xếp hàng nếu máy bận hoặc đang tạm giữ upload.')
     elif job['status'] == 'running' and progress:
         lines.append(f"{STAGES.get(progress['stage'], progress['stage'])}: {progress['fraction']:.0%}")
         if progress.get('unit') == 'byte':
@@ -41,12 +48,16 @@ def format_job(job, timezone='Asia/Ho_Chi_Minh'):
         lines.append(f"Toàn luồng: ~{progress['overall']:.0%} (ước tính)")
         eta = progress.get('eta_at')
         if eta and eta > time.time():
-            lines.append('Dự kiến xong: ~' + datetime.fromtimestamp(eta, ZoneInfo(timezone)).strftime('%H:%M:%S'))
+            lines.append('Dự kiến xong: ~' + datetime.fromtimestamp(eta, ZoneInfo(timezone)).strftime('%d/%m %H:%M'))
         else:
             lines.append('ETA: đang thu thập dữ liệu / tính lại.')
+    if job['status'] == 'running' and not progress:
+        lines.append('Đang khởi động; ETA sẽ xuất hiện khi có tiến độ.')
     if job.get('result'):
         result = json.loads(job['result'])
         lines += result.get('youtube', []) or ['Video: ' + p for p in result.get('videos', [])]
+        if job['status'] == 'succeeded' and settings.get('youtube_publish_at') and result.get('youtube'):
+            lines.append('Đã upload / đặt lịch; xem YouTube Studio để kiểm tra trạng thái công khai.')
     if job.get('error'):
         lines.append('Lỗi: ' + job['error'])
     return '\n'.join(lines)
@@ -196,7 +207,23 @@ class BotController:
                     reason = 'Không còn chờ chạy, không thể hủy.'
                 lines.append(f'#{job_id}: {reason}')
             return '\n'.join(lines)
-        if command == '/retry' and len(parts) == 2:
-            success = self.store.retry(int(parts[1]), user)
-            return 'Đã xếp hàng chạy lại.' if success else 'Không thể thực hiện; kiểm tra /status.'
+        if command == '/now' and len(parts) == 2:
+            job_id = int(parts[1])
+            if not self.store.retry(job_id, user, immediate=True):
+                return 'Chỉ chạy ngay job đang chờ, lỗi hoặc bị ngắt của bạn; không chạy lại job đang chạy/đã hoàn thành.'
+            return ('Đã ưu tiên chạy ngay. Nếu máy đang bận, job chờ luồng hiện tại kết thúc. '
+                    'Bỏ giờ chờ, lịch publish và cooldown upload; video sẽ upload private, không đặt lịch. '
+                    'Vẫn giữ giới hạn gọi LLM.\n' + format_job(self.store.get(job_id, user), self.timezone))
+        if command == '/retry' and len(parts) in (2, 4):
+            job_id = int(parts[1])
+            publish_at = None
+            if len(parts) == 4:
+                publish_at = datetime.strptime(parts[2] + ' ' + parts[3], '%Y-%m-%d %H:%M').replace(tzinfo=ZoneInfo(self.timezone)).isoformat()
+            try:
+                success = self.store.retry(job_id, user, publish_at=publish_at)
+            except ValueError as error:
+                return str(error) + f'\nĐổi giờ publish: /retry {job_id} YYYY-MM-DD HH:MM (giờ Việt Nam, cách hiện tại hơn 15 phút).'
+            if not success:
+                return 'Không thể thực hiện; chỉ retry job lỗi/bị ngắt của bạn. Kiểm tra /status.'
+            return 'Đã xếp hàng chạy lại.\n' + format_job(self.store.get(job_id, user), self.timezone)
         return HELP

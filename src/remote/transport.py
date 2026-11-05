@@ -6,7 +6,8 @@ import re
 
 class Messenger(Protocol):
     def poll(self, offset: int) -> list[dict]: ...
-    def send(self, chat_id: int, text: str, message_id: int | None = None) -> int: ...
+    def send(self, chat_id: int, text: str, message_id: int | None = None, *, reply_markup=None) -> int: ...
+    def answer_callback(self, query_id: str) -> None: ...
     def close(self) -> None: ...
 
 
@@ -52,17 +53,43 @@ class TelegramMessenger:
         return self._call('getMe', {})
 
     def poll(self, offset):
-        return self._call('getUpdates', {'offset': offset, 'timeout': 5, 'allowed_updates': ['message']})
+        return self._call('getUpdates', {'offset': offset, 'timeout': 5, 'allowed_updates': ['message', 'callback_query']})
 
-    def send(self, chat_id, text, message_id=None):
-        payload = {'chat_id': chat_id, 'text': text[:4000]}
-        if message_id:
-            payload['message_id'] = message_id
-            try:
-                return self._call('editMessageText', payload)['message_id']
-            except RuntimeError:
-                payload.pop('message_id')
-        return self._call('sendMessage', payload)['message_id']
+    def answer_callback(self, query_id):
+        self._call('answerCallbackQuery', {'callback_query_id': query_id})
+
+    def configure_commands(self, commands, users):
+        for user in users:
+            self._call('setMyCommands', {'commands': commands, 'scope': {'type': 'chat', 'chat_id': user}})
+
+    def send(self, chat_id, text, message_id=None, *, reply_markup=None):
+        # Do not silently cut results or navigation. Keep chunks below Telegram's
+        # limit even for astral characters (e.g. emoji) that occupy two UTF-16 units.
+        chunks, current, units = [], [], 0
+        for char in text:
+            width = 2 if ord(char) > 0xFFFF else 1
+            if units + width > 3500:
+                chunks.append(''.join(current))
+                current, units = [], 0
+            current.append(char)
+            units += width
+        chunks.append(''.join(current))
+        last = None
+        for index, chunk in enumerate(chunks):
+            payload = {'chat_id': chat_id, 'text': chunk}
+            if reply_markup is not None:
+                payload['reply_markup'] = reply_markup if index == len(chunks) - 1 else {'inline_keyboard': []}
+            if message_id and len(chunks) == 1:
+                payload['message_id'] = message_id
+                try:
+                    return self._call('editMessageText', payload)['message_id']
+                except RuntimeError as error:
+                    if not any(reason in str(error).lower() for reason in
+                               ('message to edit not found', "message can't be edited", 'message_id_invalid')):
+                        raise
+                    payload.pop('message_id')
+            last = self._call('sendMessage', payload)['message_id']
+        return last
 
     def close(self):
         self.client.close()

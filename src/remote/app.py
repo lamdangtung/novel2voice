@@ -28,9 +28,10 @@ def safe_error(error, secrets=()):
 
 
 class BotApplication:
-    def __init__(self, store, controller, messenger, executor, *, notify_interval=30, secrets=()):
+    def __init__(self, store, controller, messenger, executor, *, notify_interval=30, secrets=(), ui=None):
         self.store, self.controller, self.messenger, self.executor = store, controller, messenger, executor
         self.notify_interval, self.secrets = notify_interval, secrets
+        self.ui = ui
         self.stop = threading.Event()
 
     def work_once(self):
@@ -64,7 +65,11 @@ class BotApplication:
                 self.store.notified(job['id'], job['message_id'], job['updated_at'])
                 continue
             try:
-                message_id = self.messenger.send(job['chat_id'], format_job(job, self.controller.timezone), job['message_id'])
+                if self.ui:
+                    screen = self.ui.job_view(job)
+                    message_id = self.messenger.send(job['chat_id'], screen['text'], job['message_id'], reply_markup=screen['reply_markup'])
+                else:
+                    message_id = self.messenger.send(job['chat_id'], format_job(job, self.controller.timezone), job['message_id'])
                 self.store.notified(job['id'], message_id, job['updated_at'])
             except RuntimeError:
                 # Keep notification pending; a Telegram outage must not restart a pipeline.
@@ -75,10 +80,26 @@ class BotApplication:
         for update in self.messenger.poll(offset):
             if update.get('update_id', -1) < offset:
                 continue
-            result = self.controller.handle(update)
+            callback = update.get('callback_query')
+            if self.ui and callback and self.ui.identity(update) is not None:
+                try:
+                    self.messenger.answer_callback(callback['id'])
+                except RuntimeError:
+                    logger.warning('Chưa xác nhận được nút bấm Telegram; vẫn xử lý thao tác.')
+            result = self.ui.handle(update) if self.ui else self.controller.handle(update)
             if result:
                 try:
-                    self.messenger.send(*result)
+                    if self.ui:
+                        chat_id, screen = result
+                        message_id = callback.get('message', {}).get('message_id') if callback else None
+                        # Keep the dedicated progress card alive. Navigation from
+                        # it opens a separate message so worker updates cannot
+                        # overwrite the user's menu or confirmation screen.
+                        if message_id and self.store.is_notification_message(chat_id, message_id):
+                            message_id = None
+                        self.messenger.send(chat_id, screen['text'], message_id, reply_markup=screen['reply_markup'])
+                    else:
+                        self.messenger.send(*result)
                 except RuntimeError:
                     # Do not acknowledge the update yet. Command receipt prevents duplicate execution.
                     break
@@ -155,8 +176,13 @@ def run_bot(profiles_file, state_dir):
         except Exception:
             messenger.close()
             raise
-        logger.info('Telegram đã kết nối: @%s. Gửi /help trong chat riêng để kiểm tra.', identity.get('username', 'bot'))
-        application = BotApplication(store, controller, messenger, FullPipelineExecutor(),
+        logger.info('Telegram đã kết nối: @%s. Gửi /menu trong chat riêng để mở bảng điều khiển.', identity.get('username', 'bot'))
+        from .ui import TelegramUI, COMMANDS
+        try:
+            messenger.configure_commands(COMMANDS, allowed)
+        except RuntimeError:
+            logger.warning('Chưa đăng ký được menu lệnh Telegram; /menu vẫn hoạt động.')
+        application = BotApplication(store, controller, messenger, FullPipelineExecutor(), ui=TelegramUI(controller),
             notify_interval=interval,
             secrets=(token, config.OPENAI_API_KEY, config.HF_TOKEN))
         application.run()

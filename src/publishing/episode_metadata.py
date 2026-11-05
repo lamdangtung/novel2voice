@@ -11,6 +11,7 @@ from urllib.parse import urlsplit
 from src import config
 from src.publishing.metadata import _unique_object, _validate_fields
 from src.translation_providers import get_translation_provider
+from .title import normalize_title
 
 PROMPT_VERSION = 1
 
@@ -39,7 +40,7 @@ class EpisodeMetadataGenerator(Protocol):
 def validate_dynamic(data):
     if not isinstance(data, dict) or set(data) != {'title', 'summary', 'tags', 'thumbnail_text'}:
         raise ValueError('LLM metadata cần đúng title, summary, tags, thumbnail_text.')
-    for field, maximum in (('title', 100), ('summary', 1500), ('thumbnail_text', None)):
+    for field, maximum in (('title', None), ('summary', 1500), ('thumbnail_text', None)):
         value = data[field]
         if not isinstance(value, str) or not value.strip() or (maximum is not None and len(value) > maximum) or any(c in value for c in '<>'):
             raise ValueError(f'LLM metadata: {field} rỗng, sai kiểu hoặc chứa ký tự không hợp lệ.'
@@ -59,7 +60,7 @@ def validate_dynamic(data):
     if (not isinstance(data['tags'], (list, tuple)) or len(data['tags']) > 10
             or any(not isinstance(t, str) or not t.strip() or len(t) > 60 for t in data['tags'])):
         raise ValueError('LLM metadata tags cần tối đa 10 string, mỗi tag tối đa 60 ký tự.')
-    return EpisodeMetadata(data['title'].strip(), data['summary'].strip(),
+    return EpisodeMetadata(normalize_title(data['title']), data['summary'].strip(),
                            tuple(t.strip() for t in data['tags']), thumbnail)
 
 
@@ -130,12 +131,30 @@ def load_story_config(path):
     return data
 
 
+def chapter_number(chapter: ChapterText):
+    """Read chapter identity without copying the spoken chapter heading."""
+    match = re.match(r'^(?:chương|chapter)\s*(\d+)\b|^第\s*(\d+)\s*[章回]', chapter.title.strip(), re.I)
+    if match:
+        return str(int(next(group for group in match.groups() if group is not None)))
+    # Source files use e.g. ixdzs8_644938_15_vi.txt or chapter_15_vi.txt.
+    match = re.search(r'(?:^|[_-])(\d+)(?:_(?:vi|zh|en))?$', Path(chapter.filename).stem, re.I)
+    if match:
+        return str(int(match.group(1)))
+    return None
+
+
 class MetadataComposer:
     def compose(self, story: dict, dynamic: EpisodeMetadata, chapters: tuple[ChapterText, ...]):
-        chapter_titles = [c.title for c in chapters]
-        label = chapter_titles[0] if len(chapters) == 1 else f'{chapter_titles[0]} – {chapter_titles[-1]}'
+        numbers = [chapter_number(chapter) for chapter in chapters]
+        if all(number is not None for number in numbers):
+            label = f'Chương {numbers[0]}' if len(numbers) == 1 else f'Chương {numbers[0]}–{numbers[-1]}'
+        else:
+            # Unknown chapter formats retain their identity without a colon suffix.
+            labels = [f'Chương {number}' if number is not None else chapter.title.split(':', 1)[0].strip()
+                      for chapter, number in zip(chapters, numbers)]
+            label = labels[0] if len(labels) == 1 else f'{labels[0]} – {labels[-1]}'
         # Preserve story identity; reserve room for the actual episode hook.
-        title = f"{story['story_title']} | {dynamic.title} | {label}"[:100]
+        title = normalize_title(f"{story['story_title']} | {dynamic.title} | {label}")
         parts = [dynamic.summary, story.get('description_intro', ''), f"Bộ truyện: {story['story_title']}"]
         if story.get('author'):
             parts.append('Tác giả: ' + story['author'])

@@ -20,4 +20,4 @@ def normalize_publish_at(value):
 
 def require_future(value, *, buffer_seconds=0):
     if parse_publish_at(value) <= datetime.now(timezone.utc) + timedelta(seconds=buffer_seconds):
-        raise ValueError('Đã lỡ giờ publish hoặc không còn đủ thời gian đệm; không tiếp tục upload. Kiểm tra /status và xử lý lịch trong YouTube Studio.')
+        raise ValueError('Đã lỡ giờ publish hoặc không còn đủ thời gian đệm; không tiếp tục upload. Dùng /retry <job_id> YYYY-MM-DD HH:MM để đặt giờ publish mới (giờ Việt Nam). Nếu video đã upload, đổi lịch trong YouTube Studio.')

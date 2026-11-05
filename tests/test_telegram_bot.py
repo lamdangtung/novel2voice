@@ -133,6 +133,24 @@ class BotTests(unittest.TestCase):
             self.assertEqual(self.store.get(1)['status'], 'queued')
         self.assertIn('Đã hủy lịch.', self.controller.handle(update('/cancel 1', update_id=30))[1])
 
+    def test_retry_with_new_publish_time_preserves_job_and_pause(self):
+        settings = dict(self.profiles['story'], youtube_publish_at='2020-01-01T00:00:00Z')
+        self.store.enqueue('story', 1, settings, 42, 42, time.time())
+        self.store.finish(1, 'failed', error='missed deadline')
+        self.store.pause_uploads(time.time() + 86400)
+        pause = self.store.upload_pause_until()
+        reply = self.controller.handle(update('/retry 1'))[1]
+        self.assertIn('/retry 1 YYYY-MM-DD HH:MM', reply)
+        self.assertEqual(self.store.get(1)['status'], 'failed')
+        reply = self.controller.handle(update('/retry 1 2099-01-02 19:30', update_id=2))[1]
+        self.assertIn('Đã xếp hàng', reply)
+        job = self.store.get(1)
+        self.assertEqual(job['status'], 'queued')
+        self.assertEqual(json.loads(job['settings'])['youtube_publish_at'], '2099-01-02T12:30:00Z')
+        self.assertEqual(self.store.upload_pause_until(), pause)
+        self.assertEqual(job['run_at'], job['publish_at'] - 86400)
+        self.assertFalse(self.store.retry(1, 99, publish_at='2099-01-03T00:00:00Z'))
+
     def test_failed_job_retry_and_restart_interruption(self):
         self.controller.handle(update('/run story 1'))
         self.executor.run.side_effect = RuntimeError('failed')
@@ -291,7 +309,9 @@ class BotTests(unittest.TestCase):
             executor = FullPipelineExecutor()
             with self.assertRaises(RuntimeError):
                 executor.run(settings, 1, None)
+            settings['youtube_publish_at'] = '2099-01-02T12:30:00Z'
             result = executor.run(settings, 1, None)
+            pipeline.upload_videos.assert_called_with([files['video.mp4'].resolve()], privacy='private', publish_at='2099-01-02T12:30:00Z')
             self.assertTrue(result['youtube'])
             translator.assert_called_once()
             speech.assert_called_once()

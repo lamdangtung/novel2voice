@@ -129,6 +129,29 @@ class PublishingRunner:
                 db.execute("UPDATE uploads SET metadata=?,status='pending',error=NULL WHERE id=?", (metadata, job_id))
                 db.commit()
                 row = db.execute('SELECT * FROM uploads WHERE id=?', (job_id,)).fetchone()
+            if row and row['metadata'] != metadata and row['session'] and not row['video_id']:
+                old_values = json.loads(row['metadata'])
+                new_values = json.loads(metadata)
+                old_schedule = old_values.pop('publish_at', None)
+                new_schedule = new_values.pop('publish_at', None)
+                if old_values == new_values and old_schedule and spec.privacy == 'private':
+                    if new_schedule:
+                        require_future(spec.publish_at, buffer_seconds=900)
+                    # Only replace a session proven incomplete by YouTube. Never
+                    # restart an expired/ambiguous session or a completed upload.
+                    previous = self._retry(lambda: self.publisher.query(row['session'], size))
+                    if previous.video_id:
+                        if not re.fullmatch(r'[A-Za-z0-9_-]{11}', previous.video_id):
+                            raise ValueError('Server trả video ID không hợp lệ.')
+                        db.execute("UPDATE uploads SET video_id=?,offset=?,privacy=?,status='uploaded' WHERE id=?",
+                                   (previous.video_id, size, previous.privacy, job_id))
+                        db.commit()
+                        raise ValueError(f'Video đã upload: https://www.youtube.com/watch?v={previous.video_id}. Đổi lịch trong YouTube Studio; không upload lại.')
+                    if not 0 <= previous.offset < size:
+                        raise ValueError('Chưa xác định được upload đã hoàn thành hay chưa; kiểm tra YouTube Studio trước khi đổi lịch.')
+                    db.execute("UPDATE uploads SET metadata=?,session=NULL,offset=0,status='pending',error=NULL WHERE id=?", (metadata, job_id))
+                    db.commit()
+                    row = db.execute('SELECT * FROM uploads WHERE id=?', (job_id,)).fetchone()
             if row and row['metadata'] != metadata:
                 raise ValueError('Video này đã có upload với metadata khác. Không tạo bản trùng; '
                                  'chỉnh metadata trong YouTube Studio hoặc dùng lại metadata ban đầu.')

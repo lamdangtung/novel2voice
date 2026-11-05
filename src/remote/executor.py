@@ -86,7 +86,9 @@ class FullPipelineExecutor:
             if settings.get('upload_youtube', True) and published_urls is None:
                 emit(progress, 'upload', 0, 1, 'video')
                 options = {}
-                if settings.get('youtube_publish_at'):
+                if settings.get('manual_upload_now'):
+                    options = {'clear_publish_schedule': True}
+                elif settings.get('youtube_publish_at'):
                     options = {'publish_at': settings['youtube_publish_at']}
                 published = pipeline.upload_videos(videos, privacy=settings.get('youtube_privacy', 'private'), **options)
                 published_urls = [p.url for p in published]
