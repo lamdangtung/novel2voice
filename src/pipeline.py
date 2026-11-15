@@ -148,12 +148,13 @@ class NovelPipeline:
         count = config.VIDEO_CHAPTERS_PER_VIDEO if chapters_per_video is None else chapters_per_video
         return plan_videos(chapter_audio, chapters_per_video=count)
 
-    def render_videos(self, chapter_audio: List[Path], background: Path, *,
+    def render_videos(self, chapter_audio: List[Path], background: Optional[Path] = None, *,
                       output_dir: Optional[Path] = None, title: str = "",
                       chapters_per_video: Optional[int] = None, resume: bool = True,
                       renderer: Optional[VideoRenderer] = None,
                       translated_files: Optional[List[Path]] = None, story_config: Optional[Path] = None,
-                      metadata_generator=None, metadata_provider=None, metadata_model=None) -> List[Path]:
+                      metadata_generator=None, metadata_provider=None, metadata_model=None,
+                      illustrate: Optional[bool] = None, illustration_service=None) -> List[Path]:
         from src.video.base import VideoSpec
         from src.video.ffmpeg import FFmpegVideoRenderer
         episodes = self.plan_videos(chapter_audio, chapters_per_video=chapters_per_video)
@@ -164,15 +165,34 @@ class NovelPipeline:
             state_dir=config.OUTPUT_DIR / ".state" / "video", progress=self.progress)
         service, story = None, None
         translation_map = {}
+        illustrate = config.VIDEO_ILLUSTRATIONS if illustrate is None else illustrate
+        if background is None and not illustrate:
+            raise ValueError('Cần --background hoặc bật --illustrate để render video.')
+        if illustrate or story_config is not None:
+            if translated_files is None or len(translated_files) != len(chapter_audio):
+                raise ValueError('Cần bản dịch tương ứng với từng audio chương để tạo ảnh/metadata.')
+            translation_map = {Path(audio).resolve(): Path(text)
+                               for audio, text in zip(chapter_audio, translated_files)}
+        if illustrate:
+            import math
+            if (config.VIDEO_WIDTH < 16 or config.VIDEO_HEIGHT < 16
+                    or config.VIDEO_WIDTH % 2 or config.VIDEO_HEIGHT % 2 or not 1 <= config.VIDEO_FPS <= 60):
+                raise ValueError('Kích thước video phải chẵn >= 16; FPS từ 1 đến 60.')
+            for path in ([Path(background)] if background is not None else []) + (
+                    [Path(config.VIDEO_FONT_PATH)] if config.VIDEO_FONT_PATH else []):
+                if not path.is_file() or path.stat().st_size == 0:
+                    raise ValueError(f'File đầu vào không tồn tại hoặc rỗng: {path}')
+            if (not 1 <= config.VIDEO_IMAGES_PER_CHAPTER <= 8
+                    or any(len(e.chapter_audio) * config.VIDEO_IMAGES_PER_CHAPTER > 48 for e in episodes)):
+                raise ValueError('Cần 1–8 ảnh/chương và tối đa 48 ảnh/video.')
+            if (not math.isfinite(config.VIDEO_TRANSITION_SECONDS) or not 0 < config.VIDEO_TRANSITION_SECONDS <= 5
+                    or not math.isfinite(config.VIDEO_ZOOM_AMOUNT) or not 0 <= config.VIDEO_ZOOM_AMOUNT <= .2):
+                raise ValueError('Chuyển cảnh cần > 0 đến 5 giây; zoom từ 0 đến 0.2.')
         if story_config is not None:
             from src.publishing.episode_metadata import (EpisodeMetadataService,
                 LLMEpisodeMetadataGenerator, load_story_config)
             from src.publishing.metadata import load_metadata
             story = load_story_config(story_config)
-            if translated_files is None or len(translated_files) != len(chapter_audio):
-                raise ValueError("Cần bản dịch tương ứng với từng audio chương để tạo metadata.")
-            translation_map = {Path(audio).resolve(): Path(text)
-                               for audio, text in zip(chapter_audio, translated_files)}
             generator = metadata_generator if metadata_generator is not None else LLMEpisodeMetadataGenerator(
                 provider_name=metadata_provider, model=metadata_model,
                 max_input_chars=config.METADATA_MAX_INPUT_CHARS)
@@ -186,6 +206,27 @@ class NovelPipeline:
                 label = f"{title} — Tập {episode.number}"
             output_path = Path(directory) / f"{stem}.mp4"
             thumbnail_text = None
+            scenes = ()
+            if illustrate:
+                from src.video.illustrations import GeminiImageBridge, IllustrationService
+                durations = [self.audio_merger.get_duration(Path(audio)) for audio in episode.chapter_audio]
+                if any(value is None for value in durations):
+                    raise ValueError('Không đọc được thời lượng audio để chia cảnh minh họa.')
+                bridge = None
+                try:
+                    illustrations = illustration_service
+                    if illustrations is None:
+                        bridge = GeminiImageBridge(config.GEMINI_IMAGE_BASE_URL, config.GEMINI_IMAGE_MODEL,
+                            timeout=config.GEMINI_IMAGE_TIMEOUT_SECONDS, api_key=config.GEMINI_IMAGE_API_KEY)
+                        illustrations = IllustrationService(bridge, images_per_chapter=config.VIDEO_IMAGES_PER_CHAPTER,
+                            style=config.VIDEO_ILLUSTRATION_STYLE, progress=self.progress)
+                    scenes = illustrations.prepare(
+                        [translation_map[Path(audio).resolve()] for audio in episode.chapter_audio], durations,
+                        output_path.with_suffix('.illustrations'), title=title or (story or {}).get('story_title', ''),
+                        width=config.VIDEO_WIDTH, height=config.VIDEO_HEIGHT, resume=resume)
+                finally:
+                    if bridge is not None:
+                        bridge.close()
             if service is not None:
                 emit(self.progress, "metadata", 0, 1, "tập")
                 dynamic, metadata_path = service.prepare(output_path,
@@ -194,9 +235,11 @@ class NovelPipeline:
                 if not title:
                     label = load_metadata(metadata_path, output_path)['title']
                 thumbnail_text = dynamic.thumbnail_text
-            spec = VideoSpec(episode.chapter_audio, Path(background), output_path,
+            spec = VideoSpec(episode.chapter_audio, Path(background) if background is not None else scenes[0].image, output_path,
                              label, config.VIDEO_WIDTH, config.VIDEO_HEIGHT, config.VIDEO_FPS,
-                             Path(config.VIDEO_FONT_PATH) if config.VIDEO_FONT_PATH else None, thumbnail_text)
+                             Path(config.VIDEO_FONT_PATH) if config.VIDEO_FONT_PATH else None, thumbnail_text,
+                             scenes=scenes, transition_seconds=config.VIDEO_TRANSITION_SECONDS,
+                             zoom_amount=config.VIDEO_ZOOM_AMOUNT)
             output = renderer.render(spec, resume=resume)
             outputs.append(output)
             console.print(f"[green]✔ Video: {output}[/green]")

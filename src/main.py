@@ -131,16 +131,23 @@ def render_video_command(
     translated_files: Optional[list[Path]] = typer.Option(None, "--translated-file", exists=True, dir_okay=False),
     metadata_provider: Optional[str] = typer.Option(None, "--metadata-provider"),
     metadata_model: Optional[str] = typer.Option(None, "--metadata-model"),
-    background: Path = typer.Option(..., "--background", exists=True, file_okay=True, dir_okay=False),
+    background: Optional[Path] = typer.Option(None, "--background", exists=True, file_okay=True, dir_okay=False,
+        help="Ảnh nền cho chế độ tĩnh; không bắt buộc khi bật --illustrate."),
     title: str = typer.Option("", "--title"),
     chapters_per_video: Optional[int] = typer.Option(None, "--chapters-per-video", min=1),
     output_dir: Path = typer.Option(config.OUTPUT_DIR / "videos", "--output-dir"),
     resume: bool = typer.Option(True, "--resume/--no-resume"),
+    illustrate: Optional[bool] = typer.Option(None, "--illustrate/--no-illustrate",
+        help="Tạo ảnh theo bản dịch, zoom nhẹ và chuyển cảnh; cần Gemini image bridge."),
 ):
     """Render MP4, thumbnail JPG và metadata từ audio + ảnh nền."""
     try:
         metadata_options = {} if story_config is None else dict(story_config=story_config,
             translated_files=translated_files, metadata_provider=metadata_provider, metadata_model=metadata_model)
+        if translated_files is not None:
+            metadata_options['translated_files'] = translated_files
+        if illustrate is not None:
+            metadata_options['illustrate'] = illustrate
         NovelPipeline().render_videos(audio_files, background, output_dir=output_dir,
                                      title=title, chapters_per_video=chapters_per_video, resume=resume, **metadata_options)
     except KeyboardInterrupt:
@@ -196,6 +203,8 @@ def process_command(
         help="File TXT, thư mục chứa truyện hoặc URL chương ixdzs8.com."
     ),
     story_config: Optional[Path] = typer.Option(None, "--story-config", exists=True, dir_okay=False),
+    illustrate: Optional[bool] = typer.Option(None, "--illustrate/--no-illustrate",
+        help="Tạo ảnh minh họa và video chuyển cảnh; cần Gemini image bridge."),
     upload_youtube: bool = typer.Option(False, "--upload-youtube", help="Upload video sau render; cần OAuth và channel ID."),
     youtube_metadata_file: Optional[Path] = typer.Option(None, "--youtube-metadata-file", exists=True, dir_okay=False),
     youtube_privacy: Optional[str] = typer.Option(None, "--youtube-privacy"),
@@ -254,16 +263,17 @@ def process_command(
     """
     translator = None
     try:
+        illustrations_enabled = config.VIDEO_ILLUSTRATIONS if illustrate is None else illustrate
         if story_config is not None:
             from src.publishing.episode_metadata import load_story_config
             load_story_config(story_config)
-            if background is None:
-                raise ValueError("--story-config cần --background để tạo metadata và video.")
+            if background is None and not illustrations_enabled:
+                raise ValueError("--story-config cần --background hoặc --illustrate để tạo metadata và video.")
             if youtube_metadata_file is not None:
                 raise ValueError("Chọn --story-config hoặc --youtube-metadata-file, không dùng đồng thời.")
         if upload_youtube:
-            if background is None:
-                raise ValueError("--upload-youtube cần --background để render video.")
+            if background is None and not illustrations_enabled:
+                raise ValueError("--upload-youtube cần --background hoặc --illustrate để render video.")
             if not config.YOUTUBE_CHANNEL_ID or not config.YOUTUBE_TOKEN_FILE.is_file():
                 raise ValueError("Chạy youtube-auth và cấu hình YOUTUBE_CHANNEL_ID trước khi chạy pipeline upload.")
         glossary = Glossary(glossary_path or config.GLOSSARY_PATH)
@@ -278,9 +288,13 @@ def process_command(
         if input_path.startswith(("https://", "http://")):
             results = pipeline.process_url(input_path, max_chapters=max_chapters,
                                  output_audio=output_audio, cleanup_temp=cleanup_temp)
-            if background:
+            if background is not None or illustrations_enabled:
                 metadata_options = {} if story_config is None else dict(story_config=story_config,
                     translated_files=[text for text, _ in results], metadata_provider=translation_provider, metadata_model=model)
+                if illustrate is not None:
+                    metadata_options['illustrate'] = illustrate
+                if illustrations_enabled:
+                    metadata_options['translated_files'] = [text for text, _ in results]
                 videos = pipeline.render_videos([audio for _, audio in results], background,
                     output_dir=video_output_dir, title=video_title, chapters_per_video=chapters_per_video, **metadata_options)
                 if upload_youtube:
@@ -306,9 +320,13 @@ def process_command(
         else:
             console.print(f"[bold red]Đường dẫn không hợp lệ:[/bold red] {input_path}")
             raise typer.Exit(code=1)
-        if background:
+        if background is not None or illustrations_enabled:
             metadata_options = {} if story_config is None else dict(story_config=story_config,
                 translated_files=[text for text, _ in results], metadata_provider=translation_provider, metadata_model=model)
+            if illustrate is not None:
+                metadata_options['illustrate'] = illustrate
+            if illustrations_enabled:
+                metadata_options['translated_files'] = [text for text, _ in results]
             videos = pipeline.render_videos([audio for _, audio in results], background,
                 output_dir=video_output_dir, title=video_title, chapters_per_video=chapters_per_video, **metadata_options)
             if upload_youtube:

@@ -66,9 +66,11 @@ class FullPipelineExecutor:
             emit(progress, 'tts', 1, 1, 'chương')
             videos = artifacts('video')
             if videos is None:
+                illustration_options = {'illustrate': settings['illustrate']} if 'illustrate' in settings else {}
                 videos = pipeline.render_videos(audios, Path(settings['background']), chapters_per_video=1,
                     story_config=Path(settings['story_config']), translated_files=texts,
-                    metadata_provider=settings.get('translation_provider', 'deepseek'), metadata_model=settings.get('translation_model'))
+                    metadata_provider=settings.get('translation_provider', 'deepseek'), metadata_model=settings.get('translation_model'),
+                    **illustration_options)
                 if settings.get('youtube_publish_at'):
                     for video in videos:
                         metadata_path = video.with_suffix('.youtube.json')
@@ -104,7 +106,8 @@ class FullPipelineExecutor:
 
 
 class ProgressTracker:
-    WEIGHTS = {'fetch': .02, 'translate': .23, 'tts': .45, 'metadata': .05, 'render': .20, 'upload': .05}
+    WEIGHTS = {'fetch': .02, 'translate': .20, 'tts': .35, 'illustrations': .15,
+               'metadata': .05, 'render': .18, 'upload': .05}
 
     def __init__(self, store, job, *, notify_interval=30, clock=time.monotonic):
         self.store, self.job, self.clock = store, job, clock

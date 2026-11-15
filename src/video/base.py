@@ -5,6 +5,14 @@ from typing import Protocol
 
 
 @dataclass(frozen=True)
+class IllustrationScene:
+    image: Path
+    duration_seconds: float
+    source_text: str = ''
+    prompt: str = ''
+
+
+@dataclass(frozen=True)
 class VideoSpec:
     chapter_audio: tuple[Path, ...]
     background: Path
@@ -15,6 +23,9 @@ class VideoSpec:
     fps: int = 30
     font_path: Path | None = None
     thumbnail_text: str | None = None
+    scenes: tuple[IllustrationScene, ...] = ()
+    transition_seconds: float = 1.0
+    zoom_amount: float = 0.04
 
 
 class ThumbnailGenerator(Protocol):

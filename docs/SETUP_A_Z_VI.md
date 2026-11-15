@@ -677,6 +677,8 @@ Mặc định `--cleanup` xóa chunk TTS sau khi chương thành công; MP3 chư
 
 ## 11. Render video và metadata
 
+Ngoài ảnh nền có sẵn, project hỗ trợ tạo ảnh theo bản dịch, zoom nhẹ và crossfade bằng `--illustrate`. Xem [hướng dẫn minh họa Gemini](ILLUSTRATIONS_VI.md) để cấu hình, dùng cache và bật cho bot. Các ví dụ bên dưới trình bày chế độ ảnh nền thủ công.
+
 ### 11.1. Chuẩn bị ảnh và font
 
 Đặt một ảnh thật do bạn chọn tại `assets/background.jpg`. Đổi đuôi của một file không phải ảnh không tạo ra ảnh hợp lệ. Nếu chưa có ảnh, chỉ để kiểm tra render có thể tạo nền màu trơn:
@@ -785,7 +787,7 @@ python -m src.main process 'https://ixdzs8.com/read/644938/p1.html' \
   --chapters-per-video 1
 ```
 
-Chưa có `--upload-youtube` nên chỉ tạo file local. `--story-config` ở lệnh `process` cần `--background`; không dùng cùng `--youtube-metadata-file`.
+Chưa có `--upload-youtube` nên chỉ tạo file local. `--story-config` ở lệnh `process` cần `--background` hoặc bật `--illustrate`; không dùng cùng `--youtube-metadata-file`.
 
 ## 12. Kết nối và upload YouTube
 
@@ -889,7 +891,7 @@ python -m src.main process 'https://ixdzs8.com/read/644938/p1.html' \
   --upload-youtube --youtube-privacy private
 ```
 
-`--upload-youtube` cần ảnh nền, channel ID và token đã có trước khi bắt đầu dịch. Muốn công khai sau khi đã upload private, chỉnh trong YouTube Studio. Chạy lại cùng video với `--privacy public` có thể bị chặn do metadata khác với checkpoint; lệnh upload không phải lệnh cập nhật video đã đăng.
+`--upload-youtube` cần ảnh nền hoặc chế độ minh họa, channel ID và token đã có trước khi bắt đầu dịch. Muốn công khai sau khi đã upload private, chỉnh trong YouTube Studio. Chạy lại cùng video với `--privacy public` có thể bị chặn do metadata khác với checkpoint; lệnh upload không phải lệnh cập nhật video đã đăng.
 
 ### 12.5. Quy tắc metadata cần nhớ
 
@@ -1263,7 +1265,7 @@ Các biến pacing DeepSeek và `DEEPSEEK_REQUEST_STATE_DIR` được giải th�
 | Không thấy TXT trong thư mục | CLI chỉ lấy `*.txt` trực tiếp, không đệ quy |
 | File TXT rỗng | Điền nội dung; `generate_files.py` chỉ tạo file trống |
 | Glossary CSV lỗi | Đúng hai cột, đúng quoting; tách glossary theo truyện |
-| `--story-config cần --background` | Truyền ảnh nền khi chạy `process` có story config |
+| `--story-config` thiếu đầu vào hình ảnh | Truyền `--background` hoặc bật `--illustrate` với bridge Gemini đã cấu hình |
 | Render có audio nhưng chữ lỗi | Chọn font có tiếng Việt, kiểm tra `VIDEO_FONT_PATH` |
 | Video sai kích thước/fps | Kích thước chẵn >= 16, fps 1–60; kiểm tra giá trị `.env` |
 | Metadata vượt độ dài đầu vào | Giảm số chương/video hoặc chỉnh `METADATA_MAX_INPUT_CHARS` phù hợp backend |

@@ -2,7 +2,7 @@
 
 **Từ chương truyện đến audiobook tiếng Việt và video YouTube.**
 
-novel2voice là ứng dụng Python giúp lấy truyện từ web hoặc đọc file TXT, dịch sang tiếng Việt, tạo audio, render video ảnh nền tĩnh và upload YouTube. Bạn có thể chạy từng bước bằng dòng lệnh hoặc quản lý hàng đợi và lịch công khai qua Telegram.
+novel2voice là ứng dụng Python giúp lấy truyện từ web hoặc đọc file TXT, dịch sang tiếng Việt, tạo audio, render video với ảnh nền hoặc ảnh minh họa chuyển cảnh và upload YouTube. Bạn có thể chạy từng bước bằng dòng lệnh hoặc quản lý hàng đợi và lịch công khai qua Telegram.
 
 ```text
 TXT / URL chương → Bản dịch tiếng Việt → Audio từng chương
@@ -38,7 +38,7 @@ TXT / URL chương → Bản dịch tiếng Việt → Audio từng chương
 | Thuật ngữ | Glossary CSV theo truyện, tự tích lũy tên riêng và thuật ngữ khi bật |
 | Giọng đọc | Edge-TTS, OpenAI TTS, Piper và VieNeu |
 | Audio | MP3 từng chương, tùy chọn gộp nhiều chương; checkpoint và retry theo đoạn |
-| Video | Chia tập theo số chương, render ảnh nền + audio, tạo thumbnail và thông tin thời lượng |
+| Video | Ảnh nền hoặc ảnh AI theo bản dịch; zoom nhẹ, crossfade, audio và thumbnail |
 | Metadata | JSON thủ công hoặc LLM tạo nội dung theo tập kết hợp cấu hình truyện |
 | YouTube | OAuth, upload có thể tiếp tục, chống tải trùng, thumbnail và lịch công khai |
 | Telegram | Menu, hàng đợi tuần tự, tiến độ, retry và lịch 5 chương/ngày |
@@ -274,6 +274,16 @@ python -m src.main render-video output/chapter_1.mp3 output/chapter_2.mp3 \
 
 Mặc định mỗi video có một chương; có thể đổi bằng `VIDEO_CHAPTERS_PER_VIDEO` hoặc `--chapters-per-video`. Video dùng ảnh nền tĩnh, H.264/AAC, mặc định 1920×1080, 30 fps. Đặt `VIDEO_FONT_PATH` nếu cần chọn font hỗ trợ tiếng Việt.
 
+Để tự tạo ảnh theo bản dịch và chuyển cảnh mượt bằng Gemini image bridge:
+
+```bash
+python -m src.main render-video output/chapter_1.mp3 \
+  --translated-file output/chapter_1_vi.txt --illustrate \
+  --title 'Tên truyện | Chương 1' --output-dir output/illustrated_videos
+```
+
+Chế độ này không cần ảnh nền thủ công. Mặc định khoảng 4 ảnh/chương, zoom nhẹ 4% và hòa ảnh khoảng 1 giây. Ảnh được lưu cache riêng; thời điểm đổi hình ước tính theo độ dài đoạn và thời lượng audio, chưa căn chính xác từng câu. Xem [hướng dẫn video minh họa](docs/ILLUSTRATIONS_VI.md) để cấu hình bridge, CLI và Telegram.
+
 Nếu muốn LLM viết metadata theo nội dung, sao chép [story config mẫu](configs/story.example.json), chỉnh thông tin truyện rồi cung cấp cặp audio/bản dịch:
 
 ```bash
@@ -453,12 +463,13 @@ Bộ test kiểm tra dịch, glossary, TTS checkpoint/retry, nguồn web, render
 |---|---|
 | [Setup A–Z](docs/SETUP_A_Z_VI.md) | Cài mới, thiết lập provider, OAuth/bot và xử lý lỗi |
 | [Cấu hình môi trường](.env.example) | Tra biến `.env` và chọn nhóm cấu hình cần dùng |
+| [Ảnh minh họa và chuyển cảnh](docs/ILLUSTRATIONS_VI.md) | Tạo ảnh qua Gemini, cache, ghép cảnh và bật cho Telegram |
 | [Tham chiếu kỹ thuật](docs/REFERENCE_VI.md) | Cơ chế checkpoint, glossary, metadata, upload và lịch |
 | [Story config mẫu](configs/story.example.json) | Khai báo thông tin cố định theo truyện |
 | [YouTube metadata mẫu](configs/youtube.example.json) | Biên tập metadata thủ công cho một/nhiều video |
 | [Telegram profile mẫu](configs/telegram.example.json) | Cấu hình truyện cho bot |
 | [Roadmap](roadmap.md) | Định hướng mở rộng, cần phân biệt với code đã triển khai |
 
-Phạm vi hiện tại: nguồn web chỉ có trang chương ixdzs8; video dùng ảnh tĩnh; mỗi job Telegram xử lý một chương thành một video. Chưa có web dashboard, tự theo dõi chương mới vô hạn, tạo Shorts/Reels, tự quản lý playlist hoặc cập nhật metadata cho video đã upload. Các thay đổi sau upload được thực hiện trong YouTube Studio.
+Phạm vi hiện tại: nguồn web chỉ có trang chương ixdzs8; video hỗ trợ ảnh tĩnh hoặc slideshow minh họa có zoom/crossfade; mỗi job Telegram xử lý một chương thành một video. Chưa có web dashboard, tự theo dõi chương mới vô hạn, tạo Shorts/Reels, tự quản lý playlist hoặc cập nhật metadata cho video đã upload. Các thay đổi sau upload được thực hiện trong YouTube Studio.
 
 Chất lượng bản dịch/giọng đọc, quyền tài khoản, hạn mức dịch vụ và thời gian xử lý YouTube cần được kiểm tra trong môi trường thực tế. Lịch và checkpoint giúp vận hành, nhưng không bảo đảm mọi job sẽ kịp giờ công khai.

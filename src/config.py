@@ -65,6 +65,17 @@ VIDEO_HEIGHT = int(os.getenv("VIDEO_HEIGHT", "1080"))
 VIDEO_FPS = int(os.getenv("VIDEO_FPS", "30"))
 VIDEO_FONT_PATH = os.getenv("VIDEO_FONT_PATH") or None
 
+# Optional illustrated slideshow. The bridge client is independent of translation/TTS.
+VIDEO_ILLUSTRATIONS = os.getenv("VIDEO_ILLUSTRATIONS", "false").lower() in ("1", "true", "yes")
+VIDEO_IMAGES_PER_CHAPTER = int(os.getenv("VIDEO_IMAGES_PER_CHAPTER", "4"))
+VIDEO_TRANSITION_SECONDS = float(os.getenv("VIDEO_TRANSITION_SECONDS", "1"))
+VIDEO_ZOOM_AMOUNT = float(os.getenv("VIDEO_ZOOM_AMOUNT", "0.04"))
+GEMINI_IMAGE_BASE_URL = os.getenv("GEMINI_IMAGE_BASE_URL", "http://127.0.0.1:4981/openai/v1")
+GEMINI_IMAGE_MODEL = os.getenv("GEMINI_IMAGE_MODEL", "gemini-auto")
+GEMINI_IMAGE_API_KEY = os.getenv("GEMINI_IMAGE_API_KEY", "not-needed")
+GEMINI_IMAGE_TIMEOUT_SECONDS = float(os.getenv("GEMINI_IMAGE_TIMEOUT_SECONDS", "360"))
+VIDEO_ILLUSTRATION_STYLE = os.getenv("VIDEO_ILLUSTRATION_STYLE", "Cinematic digital illustration, consistent character appearance, period-accurate settings, no text, captions, logos or watermarks.")
+
 # YouTube publishing is opt-in; OAuth secrets are local and git-ignored.
 YOUTUBE_CLIENT_SECRETS_FILE = Path(os.getenv("YOUTUBE_CLIENT_SECRETS_FILE", str(BASE_DIR / ".secrets/youtube/client_secret.json")))
 YOUTUBE_TOKEN_FILE = Path(os.getenv("YOUTUBE_TOKEN_FILE", str(BASE_DIR / ".secrets/youtube/token.json")))

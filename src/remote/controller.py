@@ -22,7 +22,7 @@ HELP = '''/menu — bảng điều khiển bằng nút bấm
 Mỗi job xử lý một chương thành một video. Lịch là giờ Việt Nam (Asia/Ho_Chi_Minh).'''
 
 STAGES = {'fetch': 'Lấy truyện', 'translate': 'Dịch / glossary', 'tts': 'Tạo audio',
-          'metadata': 'Tạo metadata', 'render': 'Render video', 'upload': 'Upload YouTube'}
+          'illustrations': 'Tạo ảnh minh họa', 'metadata': 'Tạo metadata', 'render': 'Render video', 'upload': 'Upload YouTube'}
 
 
 def format_job(job, timezone='Asia/Ho_Chi_Minh'):

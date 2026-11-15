@@ -1,3 +1,6 @@
 [submodule "infra/Deepseek-API"]
     path = infra/Deepseek-API
     url = https://github.com/lamdangtung/Deepseek-API.git
+[submodule "infra/gemini-web-to-api"]
+    path = infra/gemini-web-to-api
+    url = https://github.com/lamdangtung/gemini-web-to-api.git

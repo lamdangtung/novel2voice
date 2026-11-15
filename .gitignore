@@ -232,3 +232,5 @@ client_secrets*.json
 youtube_token*.json
 assets
 glossary.csv
+.gemini
+.codex

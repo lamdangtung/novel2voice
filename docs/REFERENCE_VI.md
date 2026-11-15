@@ -352,7 +352,7 @@ python -m src.main process 'https://ixdzs8.com/read/644938/p1.html' \
 ```
 
 Thay `assets/background.jpg` bằng ảnh thật của bạn. Với `process`, chỉ render
-khi có `--background`; `--video-output-dir` đổi thư mục video. Với `render-video`,
+khi có `--background` hoặc bật `--illustrate`; `--video-output-dir` đổi thư mục video. Với `render-video`,
 `--output-dir` đổi thư mục kết quả. Số chương lấy từ `VIDEO_CHAPTERS_PER_VIDEO`
 nếu không truyền `--chapters-per-video`.
 
@@ -377,7 +377,7 @@ Mỗi nhóm xuất ba file trong `output/videos/`:
 
 Nhóm nhiều chương dùng tên `<first>__to__<last>`. Ảnh nền được crop vừa khung,
 không kéo méo; tiêu đề được xuống dòng trong dải nền tối. Video dài theo audio.
-Chưa có zoom, nhạc nền, phụ đề hoặc intro/outro. Upload YouTube là bước riêng ở dưới.
+Chế độ ảnh nền thủ công không thêm chuyển động. Chế độ `--illustrate` có tạo ảnh, zoom và crossfade; xem [hướng dẫn minh họa](ILLUSTRATIONS_VI.md). Chưa có nhạc nền, phụ đề hoặc intro/outro. Upload YouTube là bước riêng ở dưới.
 
 Checkpoint lưu tại `output/.state/video/videos.sqlite3`. Chỉ bỏ qua video khi
 nội dung audio, ảnh, font cấu hình, tiêu đề, thông số render và checksum cả ba
@@ -596,7 +596,7 @@ python -m src.main process 'https://ixdzs8.com/read/644938/p1.html' \
 ```
 
 Luồng: fetch → dịch/học glossary → audio chương → render video → upload video +
-thumbnail. `--upload-youtube` cần ảnh nền, OAuth token và channel ID đã cấu hình.
+thumbnail. `--upload-youtube` cần ảnh nền hoặc `--illustrate`, OAuth token và channel ID đã cấu hình.
 Khi chỉ cần thử lại upload, dùng `youtube-upload` với MP4 đã có để tránh dịch lại.
 
 #### Checkpoint và giới hạn hiện tại
