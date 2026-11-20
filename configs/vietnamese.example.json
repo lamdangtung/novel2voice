@@ -1,0 +1,23 @@
+{
+  "command": "tts",
+  "vi_path": "input/hai_dua_tre",
+  "provider": "edge-tts",
+  "voice": "vi-VN-HoaiMyNeural",
+  "rate": "+0%",
+  "cleanup_temp": true,
+  "combine": false,
+  "concurrency": 3,
+  "resume": true,
+  "state_dir": "output/.state",
+  "retries": 2,
+  "continue_on_error": true,
+  "background": "assets/background.jpg",
+  "story_config": null,
+  "video_title": "Hai đứa trẻ",
+  "video_output_dir": "output/videos",
+  "chapters_per_video": 1,
+  "upload_youtube": false,
+  "youtube_metadata_file": null,
+  "youtube_privacy": "private",
+  "dry_run": false
+}

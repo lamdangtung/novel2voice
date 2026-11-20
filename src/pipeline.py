@@ -116,6 +116,79 @@ class NovelPipeline:
             return [target]
         return output_files
 
+    def create_vietnamese_media(
+        self,
+        vi_files: List[Path],
+        background: Optional[Path] = None,
+        *,
+        output_audio: Optional[Path] = None,
+        cleanup_temp: bool = True,
+        combine: bool = False,
+        resume: bool = True,
+        state_dir: Optional[Path] = None,
+        retries: int = 2,
+        continue_on_error: bool = True,
+        video_output_dir: Optional[Path] = None,
+        video_title: str = "",
+        chapters_per_video: Optional[int] = None,
+        story_config: Optional[Path] = None,
+        metadata_provider: Optional[str] = None,
+        metadata_model: Optional[str] = None,
+    ) -> Tuple[List[Path], List[Path]]:
+        """Tạo audio và tùy chọn video từ các file/truyện đã có bằng tiếng Việt."""
+        from src.utils import natural_sort_paths
+
+        sorted_files = natural_sort_paths(vi_files)
+        if not sorted_files:
+            raise ValueError("Danh sách file tiếng Việt trống.")
+
+        if len(sorted_files) == 1:
+            chapter_audio = [self.tts_only(
+                vi_file=sorted_files[0],
+                output_audio=output_audio,
+                cleanup_temp=cleanup_temp,
+                resume=resume,
+                state_dir=state_dir,
+                retries=retries,
+            )]
+        else:
+            chapter_audio = self.tts_batch(
+                vi_files=sorted_files,
+                combine=False,
+                cleanup_temp=cleanup_temp,
+                resume=resume,
+                state_dir=state_dir,
+                retries=retries,
+                continue_on_error=continue_on_error,
+            )
+            if combine:
+                target = output_audio or config.OUTPUT_DIR / "combined_novel.mp3"
+                if target.resolve() in {p.resolve() for p in chapter_audio}:
+                    raise ValueError("File gộp phải khác file audio từng chương.")
+                runner = self._tts_runner(state_dir, retries)
+                runner.combine(chapter_audio, target, resume=resume)
+                console.print(f"[green]✔ Audio gộp: {target}[/green]")
+
+        videos = []
+        if background is not None:
+            metadata_options = {}
+            if story_config is not None:
+                metadata_options = {
+                    "story_config": story_config,
+                    "translated_files": sorted_files,
+                    "metadata_provider": metadata_provider,
+                    "metadata_model": metadata_model,
+                }
+            videos = self.render_videos(
+                chapter_audio,
+                background,
+                output_dir=video_output_dir,
+                title=video_title,
+                chapters_per_video=chapters_per_video,
+                **metadata_options,
+            )
+        return chapter_audio, videos
+
     def _save_batch_report(self, runner, sorted_files):
         import json
         report = self.last_batch_report

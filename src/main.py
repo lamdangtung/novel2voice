@@ -11,6 +11,7 @@ from src.translator import NovelTranslator
 from src.tts import get_tts_provider
 from src.pipeline import NovelPipeline
 from src.utils import natural_sort_paths
+from src.cli_config import config_value, load_run_config
 import logging
 
 app = typer.Typer(
@@ -191,20 +192,27 @@ def fetch_command(
 
 @app.command("process")
 def process_command(
-    input_path: str = typer.Argument(
-        ...,
+    input_path: Optional[str] = typer.Argument(
+        None,
         help="File TXT, thư mục chứa truyện hoặc URL chương ixdzs8.com."
     ),
+    config_file: Optional[Path] = typer.Option(
+        None, "--config", exists=True, dir_okay=False,
+        help="File JSON cấu hình cho lần chạy; tùy chọn CLI được ưu tiên."
+    ),
     story_config: Optional[Path] = typer.Option(None, "--story-config", exists=True, dir_okay=False),
-    upload_youtube: bool = typer.Option(False, "--upload-youtube", help="Upload video sau render; cần OAuth và channel ID."),
+    upload_youtube: Optional[bool] = typer.Option(
+        None, "--upload-youtube/--no-upload-youtube",
+        help="Upload video sau render; cần OAuth và channel ID."
+    ),
     youtube_metadata_file: Optional[Path] = typer.Option(None, "--youtube-metadata-file", exists=True, dir_okay=False),
     youtube_privacy: Optional[str] = typer.Option(None, "--youtube-privacy"),
     background: Optional[Path] = typer.Option(None, "--background", exists=True, dir_okay=False,
                                             help="Ảnh nền; có tùy chọn này sẽ render video sau TTS."),
-    video_title: str = typer.Option("", "--video-title"),
-    video_output_dir: Path = typer.Option(config.OUTPUT_DIR / "videos", "--video-output-dir"),
+    video_title: Optional[str] = typer.Option(None, "--video-title"),
+    video_output_dir: Optional[Path] = typer.Option(None, "--video-output-dir"),
     chapters_per_video: Optional[int] = typer.Option(None, "--chapters-per-video", min=1),
-    max_chapters: int = typer.Option(1, "--max-chapters", min=1, help="Số chương tối đa khi đầu vào là URL."),
+    max_chapters: Optional[int] = typer.Option(None, "--max-chapters", min=1, help="Số chương tối đa khi đầu vào là URL."),
     output_audio: Optional[Path] = typer.Option(
         None,
         "--output", "-o",
@@ -238,13 +246,13 @@ def process_command(
         "--glossary", "-g",
         help="Đường dẫn file glossary.csv để chuẩn hóa thuật ngữ."
     ),
-    cleanup_temp: bool = typer.Option(
-        True,
+    cleanup_temp: Optional[bool] = typer.Option(
+        None,
         "--cleanup/--no-cleanup",
         help="Xóa các file audio chunks tạm thời sau khi ghép."
     ),
-    concurrency: int = typer.Option(
-        config.TTS_CONCURRENCY,
+    concurrency: Optional[int] = typer.Option(
+        None,
         "--concurrency", "-j",
         help=f"Số luồng xử lý TTS song song (mặc định: {config.TTS_CONCURRENCY})."
     )
@@ -254,6 +262,40 @@ def process_command(
     """
     translator = None
     try:
+        values = load_run_config(config_file, "process") if config_file else {}
+        input_path = config_value(input_path, values, "input_path")
+        if not input_path:
+            raise ValueError("Cần truyền input_path hoặc đặt input_path trong file cấu hình.")
+        story_config = config_value(story_config, values, "story_config")
+        if story_config is not None:
+            story_config = Path(story_config)
+        upload_youtube = config_value(upload_youtube, values, "upload_youtube", False)
+        youtube_metadata_file = config_value(youtube_metadata_file, values, "youtube_metadata_file")
+        if youtube_metadata_file is not None:
+            youtube_metadata_file = Path(youtube_metadata_file)
+        youtube_privacy = config_value(youtube_privacy, values, "youtube_privacy")
+        background = config_value(background, values, "background")
+        if background is not None:
+            background = Path(background)
+        video_title = config_value(video_title, values, "video_title", "")
+        video_output_dir = config_value(video_output_dir, values, "video_output_dir",
+                                        config.OUTPUT_DIR / "videos")
+        video_output_dir = Path(video_output_dir)
+        chapters_per_video = config_value(chapters_per_video, values, "chapters_per_video")
+        max_chapters = config_value(max_chapters, values, "max_chapters", 1)
+        output_audio = config_value(output_audio, values, "output_audio")
+        if output_audio is not None:
+            output_audio = Path(output_audio)
+        voice = config_value(voice, values, "voice")
+        rate = config_value(rate, values, "rate")
+        provider = config_value(provider, values, "provider")
+        model = config_value(model, values, "model")
+        translation_provider = config_value(translation_provider, values, "translation_provider")
+        glossary_path = config_value(glossary_path, values, "glossary_path")
+        if glossary_path is not None:
+            glossary_path = Path(glossary_path)
+        cleanup_temp = config_value(cleanup_temp, values, "cleanup_temp", True)
+        concurrency = config_value(concurrency, values, "concurrency", config.TTS_CONCURRENCY)
         if story_config is not None:
             from src.publishing.episode_metadata import load_story_config
             load_story_config(story_config)
@@ -381,9 +423,13 @@ def translate_command(
 
 @app.command("tts")
 def tts_command(
-    vi_path: Path = typer.Argument(
-        ...,
+    vi_path: Optional[Path] = typer.Argument(
+        None,
         help="Đường dẫn file .txt tiếng Việt hoặc thư mục chứa các file tiếng Việt."
+    ),
+    config_file: Optional[Path] = typer.Option(
+        None, "--config", exists=True, dir_okay=False,
+        help="File JSON cấu hình cho lần chạy; tùy chọn CLI được ưu tiên."
     ),
     output_audio: Optional[Path] = typer.Option(
         None,
@@ -405,37 +451,167 @@ def tts_command(
         "--provider", "-p",
         help=f"Nhà cung cấp TTS ('vieneu', 'piper', 'edge-tts', 'openai', mặc định: {config.TTS_PROVIDER})."
     ),
-    cleanup_temp: bool = typer.Option(
-        True,
+    cleanup_temp: Optional[bool] = typer.Option(
+        None,
         "--cleanup/--no-cleanup",
         help="Xóa các file audio chunks tạm thời sau khi ghép."
     ),
-    combine: bool = typer.Option(
-        False,
-        "--combine", "-c",
+    combine: Optional[bool] = typer.Option(
+        None,
+        "--combine/--no-combine", "-c",
         help="Gộp tất cả các file trong thư mục thành 1 file MP3 duy nhất theo đúng thứ tự số chương."
     ),
-    concurrency: int = typer.Option(
-        config.TTS_CONCURRENCY,
+    concurrency: Optional[int] = typer.Option(
+        None,
         "--concurrency", "-j",
         min=1,
         help=f"Số luồng xử lý TTS song song (mặc định: {config.TTS_CONCURRENCY})."
     ),
-    resume: bool = typer.Option(True, "--resume/--no-resume", help="Tái sử dụng kết quả hợp lệ; --no-resume tạo lại audio."),
-    state_dir: Path = typer.Option(config.OUTPUT_DIR / ".state", "--state-dir", help="Thư mục checkpoint SQLite và audio tạm."),
-    retries: int = typer.Option(2, "--retries", min=0, help="Số lần thử lại đoạn lỗi trong một lần chạy."),
-    continue_on_error: bool = typer.Option(True, "--continue-on-error/--fail-fast", help="Tiếp tục các chương khác khi một chương lỗi."),
+    resume: Optional[bool] = typer.Option(None, "--resume/--no-resume", help="Tái sử dụng kết quả hợp lệ; --no-resume tạo lại audio."),
+    state_dir: Optional[Path] = typer.Option(None, "--state-dir", help="Thư mục checkpoint SQLite và audio tạm."),
+    retries: Optional[int] = typer.Option(None, "--retries", min=0, help="Số lần thử lại đoạn lỗi trong một lần chạy."),
+    continue_on_error: Optional[bool] = typer.Option(None, "--continue-on-error/--fail-fast", help="Tiếp tục các chương khác khi một chương lỗi."),
+    background: Optional[Path] = typer.Option(
+        None, "--background", exists=True, file_okay=True, dir_okay=False,
+        help="Ảnh nền; có tùy chọn này sẽ render video sau khi tạo audio."
+    ),
+    story_config: Optional[Path] = typer.Option(None, "--story-config", exists=True, dir_okay=False),
+    video_title: Optional[str] = typer.Option(None, "--video-title"),
+    video_output_dir: Optional[Path] = typer.Option(None, "--video-output-dir"),
+    chapters_per_video: Optional[int] = typer.Option(None, "--chapters-per-video", min=1),
+    upload_youtube: Optional[bool] = typer.Option(
+        None, "--upload-youtube/--no-upload-youtube",
+        help="Upload video sau render; cần OAuth và channel ID."
+    ),
+    youtube_metadata_file: Optional[Path] = typer.Option(None, "--youtube-metadata-file", exists=True, dir_okay=False),
+    youtube_privacy: Optional[str] = typer.Option(None, "--youtube-privacy"),
+    dry_run: Optional[bool] = typer.Option(
+        None, "--dry-run/--no-dry-run",
+        help="Chỉ kiểm tra input và hiển thị kế hoạch, không gọi TTS, FFmpeg, OAuth hoặc ghi file."
+    ),
 ):
     """
-    Chuyển đổi file văn bản tiếng Việt sang file âm thanh MP3.
+    Chuyển TXT tiếng Việt đã dịch sẵn thành MP3; tùy chọn render video và upload YouTube.
     """
     tts_prov = None
     try:
+        values = load_run_config(config_file, "tts") if config_file else {}
+        vi_path = config_value(vi_path, values, "vi_path")
+        if vi_path is None:
+            raise ValueError("Cần truyền vi_path hoặc đặt vi_path trong file cấu hình.")
+        vi_path = Path(vi_path)
+        output_audio = config_value(output_audio, values, "output_audio")
+        if output_audio is not None:
+            output_audio = Path(output_audio)
+        voice = config_value(voice, values, "voice")
+        rate = config_value(rate, values, "rate")
+        provider = config_value(provider, values, "provider")
+        cleanup_temp = config_value(cleanup_temp, values, "cleanup_temp", True)
+        combine = config_value(combine, values, "combine", False)
+        concurrency = config_value(concurrency, values, "concurrency", config.TTS_CONCURRENCY)
+        resume = config_value(resume, values, "resume", True)
+        state_dir = config_value(state_dir, values, "state_dir", config.OUTPUT_DIR / ".state")
+        state_dir = Path(state_dir)
+        retries = config_value(retries, values, "retries", 2)
+        continue_on_error = config_value(continue_on_error, values, "continue_on_error", True)
+        background = config_value(background, values, "background")
+        if background is not None:
+            background = Path(background)
+        story_config = config_value(story_config, values, "story_config")
+        if story_config is not None:
+            story_config = Path(story_config)
+        video_title = config_value(video_title, values, "video_title", "")
+        video_output_dir = config_value(video_output_dir, values, "video_output_dir",
+                                        config.OUTPUT_DIR / "videos")
+        video_output_dir = Path(video_output_dir)
+        chapters_per_video = config_value(chapters_per_video, values, "chapters_per_video")
+        upload_youtube = config_value(upload_youtube, values, "upload_youtube", False)
+        youtube_metadata_file = config_value(youtube_metadata_file, values, "youtube_metadata_file")
+        if youtube_metadata_file is not None:
+            youtube_metadata_file = Path(youtube_metadata_file)
+        youtube_privacy = config_value(youtube_privacy, values, "youtube_privacy")
+        dry_run = config_value(dry_run, values, "dry_run", False)
+
+        if dry_run:
+            if vi_path.is_file():
+                source_files = [vi_path]
+            elif vi_path.is_dir():
+                source_files = natural_sort_paths(list(vi_path.glob("*.txt")))
+            else:
+                raise ValueError(f"Đường dẫn không tồn tại: {vi_path}")
+            if not source_files:
+                raise ValueError(f"Không tìm thấy file .txt nào trong thư mục: {vi_path}")
+            empty_files = [path for path in source_files if not path.is_file() or path.stat().st_size == 0]
+            if empty_files:
+                raise ValueError("Có file TXT rỗng hoặc không hợp lệ: " + ", ".join(str(path) for path in empty_files))
+            if background is not None and (not background.is_file() or background.stat().st_size == 0):
+                raise ValueError(f"Ảnh nền không tồn tại hoặc rỗng: {background}")
+            if story_config is not None:
+                from src.publishing.episode_metadata import load_story_config
+                load_story_config(story_config)
+                if background is None:
+                    raise ValueError("--story-config cần --background để tạo metadata và video.")
+                if youtube_metadata_file is not None:
+                    raise ValueError("Chọn --story-config hoặc --youtube-metadata-file, không dùng đồng thời.")
+            if upload_youtube and background is None:
+                raise ValueError("--upload-youtube cần --background để render video.")
+
+            chapter_count = len(source_files)
+            per_video = chapters_per_video or config.VIDEO_CHAPTERS_PER_VIDEO
+            video_count = ((chapter_count + per_video - 1) // per_video) if background is not None else 0
+            plan = Table(title="Dry run - kế hoạch tạo giọng đọc/video")
+            plan.add_column("Tham số")
+            plan.add_column("Giá trị")
+            plan.add_row("Chế độ", "Kiểm tra/offline")
+            plan.add_row("Đầu vào", str(vi_path))
+            plan.add_row("Số file TXT", str(chapter_count))
+            plan.add_row("Provider TTS", provider or config.TTS_PROVIDER)
+            plan.add_row("Giọng", voice or config.TTS_VOICE)
+            plan.add_row("Tốc độ", rate or config.TTS_RATE)
+            plan.add_row("MP3 riêng từng chương", str(chapter_count))
+            plan.add_row("Gộp audio", "Có" if combine else "Không")
+            plan.add_row("Ảnh nền", str(background) if background else "Không")
+            plan.add_row("Số video dự kiến", str(video_count))
+            plan.add_row("Thư mục video", str(video_output_dir))
+            plan.add_row("Story config", str(story_config) if story_config else "Không")
+            plan.add_row("Upload YouTube", "Có" if upload_youtube else "Không")
+            plan.add_row("Quyền riêng tư", youtube_privacy or config.YOUTUBE_PRIVACY)
+            plan.add_row("Checkpoint", str(state_dir))
+            console.print(plan)
+            console.print("[green]✔ Dry run hợp lệ; chưa gọi TTS, FFmpeg, OAuth hoặc ghi output/state.[/green]")
+            return
+
+        if story_config is not None:
+            from src.publishing.episode_metadata import load_story_config
+            load_story_config(story_config)
+            if background is None:
+                raise ValueError("--story-config cần --background để tạo metadata và video.")
+            if youtube_metadata_file is not None:
+                raise ValueError("Chọn --story-config hoặc --youtube-metadata-file, không dùng đồng thời.")
+        if upload_youtube:
+            if background is None:
+                raise ValueError("--upload-youtube cần --background để render video.")
+            if not config.YOUTUBE_CHANNEL_ID or not config.YOUTUBE_TOKEN_FILE.is_file():
+                raise ValueError("Chạy youtube-auth và cấu hình YOUTUBE_CHANNEL_ID trước khi chạy pipeline upload.")
+
         tts_prov = get_tts_provider(provider_name=provider, voice=voice, rate=rate)
         pipeline = NovelPipeline(tts_provider=tts_prov, concurrency=concurrency)
 
         if vi_path.is_file():
-            pipeline.tts_only(vi_file=vi_path, output_audio=output_audio, cleanup_temp=cleanup_temp, resume=resume, state_dir=state_dir, retries=retries)
+            _, videos = pipeline.create_vietnamese_media(
+                [vi_path],
+                background,
+                output_audio=output_audio,
+                cleanup_temp=cleanup_temp,
+                combine=False,
+                resume=resume,
+                state_dir=state_dir,
+                retries=retries,
+                video_output_dir=video_output_dir,
+                video_title=video_title,
+                chapters_per_video=chapters_per_video,
+                story_config=story_config,
+            )
         elif vi_path.is_dir():
             files = natural_sort_paths(list(vi_path.glob("*.txt")))
             if not files:
@@ -443,17 +619,25 @@ def tts_command(
                 raise typer.Exit(code=1)
 
             console.print(f"[bold cyan]Tìm thấy {len(files)} files cần tạo TTS trong thư mục {vi_path} (theo thứ tự tự nhiên)[/bold cyan]")
-            pipeline.tts_batch(
-                vi_files=files,
-                combine=combine,
+            _, videos = pipeline.create_vietnamese_media(
+                files,
+                background,
                 output_audio=output_audio,
                 cleanup_temp=cleanup_temp,
+                combine=combine,
                 resume=resume, state_dir=state_dir, retries=retries,
-                continue_on_error=continue_on_error
+                continue_on_error=continue_on_error,
+                video_output_dir=video_output_dir,
+                video_title=video_title,
+                chapters_per_video=chapters_per_video,
+                story_config=story_config,
             )
         else:
             console.print(f"[bold red]Đường dẫn không tồn tại:[/bold red] {vi_path}")
             raise typer.Exit(code=1)
+
+        if upload_youtube:
+            pipeline.upload_videos(videos, privacy=youtube_privacy, metadata_file=youtube_metadata_file)
 
     except KeyboardInterrupt:
         console.print("[yellow]Đã dừng. Checkpoint được giữ; chạy lại cùng lệnh để tiếp tục.[/yellow]")

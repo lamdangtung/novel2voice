@@ -128,6 +128,58 @@ Mở `output/demo/chapter_1.mp3` bằng trình phát audio để nghe kết qu�
 
 Mỗi lần mở Terminal mới, vào thư mục project và chạy `source .venv/bin/activate`. Tất cả ví dụ dưới đây dùng `python -m src.main` từ thư mục gốc.
 
+### Chạy bằng file cấu hình
+
+`process` và `tts` nhận file JSON cho một lần chạy. Các khóa trong file tương ứng
+với tên tham số của lệnh; giá trị truyền trực tiếp bằng CLI luôn được ưu tiên.
+
+```bash
+python -m src.main tts --config configs/tts.json
+python -m src.main tts --config configs/tts.json --provider edge-tts
+```
+
+Ví dụ [configs/tts.example.json](configs/tts.example.json):
+
+```json
+{
+  "command": "tts",
+  "vi_path": "input/my_story_vi",
+  "provider": "vieneu",
+  "voice": "Ngọc Lan",
+  "rate": "+0%",
+  "cleanup_temp": true,
+  "combine": true,
+  "concurrency": 3,
+  "resume": true,
+  "state_dir": "output/.state",
+  "retries": 2,
+  "continue_on_error": true,
+  "background": null,
+  "story_config": null,
+  "video_title": "",
+  "video_output_dir": "output/videos",
+  "chapters_per_video": 1,
+  "upload_youtube": false,
+  "youtube_metadata_file": null,
+  "youtube_privacy": "private",
+  "dry_run": false
+}
+```
+
+`process` dùng cùng cơ chế với các khóa như `input_path`, `translation_provider`,
+`model`, `provider`, `background`, `video_output_dir` và `upload_youtube`.
+
+Xem [hướng dẫn cấu hình lần chạy](docs/HUONG_DAN_CAU_HINH_CHAY_VI.md) để biết
+ý nghĩa chi tiết của từng tham số `process` và `tts`.
+
+Sao chép mẫu [configs/process.example.json](configs/process.example.json) thành
+file cấu hình riêng, thay đường dẫn và tham số, rồi chạy:
+
+```bash
+cp -n configs/process.example.json configs/process.json
+python -m src.main process --config configs/process.json
+```
+
 <a id="providers"></a>
 
 ## Cấu hình provider
@@ -186,6 +238,63 @@ python -m src.main tts input/my_story_vi --provider vieneu \
 ```
 
 Mặc định `chapter_1_vi.txt` tạo `output/chapter_1.mp3`. Batch sắp xếp theo thứ tự số tự nhiên: 1, 2, 10. `--combine` vẫn giữ MP3 riêng từng chương; `--no-cleanup` giữ các đoạn audio để thuận tiện khi sửa nội dung.
+
+### TXT đã dịch sẵn hoặc văn học tiếng Việt → audio/video
+
+Dùng riêng lệnh `tts` cho nội dung đã có bằng tiếng Việt; lệnh này không gọi bước
+dịch. Với một file đơn hoặc thư mục nhiều chương:
+
+```bash
+python -m src.main tts input/hai_dua_tre/hai_dua_tre.txt \
+  --provider edge-tts \
+  --voice vi-VN-HoaiMyNeural \
+  --background assets/background.jpg \
+  --video-title 'Hai đứa trẻ'
+```
+
+```bash
+python -m src.main tts input/truyen_vi \
+  --provider edge-tts \
+  --voice vi-VN-HoaiMyNeural \
+  --combine \
+  --background assets/background.jpg \
+  --story-config configs/story.json \
+  --chapters-per-video 1 \
+  --video-output-dir output/videos
+```
+
+Các tùy chọn `--story-config`, `--chapters-per-video`, `--video-output-dir` và
+`--upload-youtube` có thể dùng trong cùng lệnh `tts`. Khi dùng `--story-config`,
+file TXT tương ứng được gửi kèm MP3 để tạo tiêu đề, mô tả và thumbnail metadata.
+Đặt `--upload-youtube` sau khi đã chạy `youtube-auth` và cấu hình OAuth/channel.
+
+Mẫu cấu hình dành riêng cho nội dung tiếng Việt:
+
+```bash
+cp -n configs/vietnamese.example.json configs/vietnamese.json
+python -m src.main tts --config configs/vietnamese.json
+```
+
+### Dry run cho luồng tiếng Việt
+
+Dry run kiểm tra file TXT, ảnh nền, story config, kế hoạch chương/video và tùy
+chọn upload mà không gọi TTS, FFmpeg, YouTube OAuth hay ghi audio/state:
+
+```bash
+python -m src.main tts --config configs/vietnamese.json --dry-run
+```
+
+Có thể bật trong JSON thay cho flag CLI:
+
+```json
+{
+  "command": "tts",
+  "vi_path": "input/hai_dua_tre",
+  "dry_run": true
+}
+```
+
+CLI `--dry-run` được ưu tiên so với giá trị `dry_run` trong file cấu hình.
 
 ### TXT gốc → bản dịch → audio
 

@@ -1,3 +1,4 @@
+import json
 import shutil
 import subprocess
 import tempfile
@@ -235,6 +236,59 @@ class CLITests(unittest.TestCase):
         runner = CliRunner()
         self.assertEqual(runner.invoke(app, ['tts', 'input/', '-j', '0']).exit_code, 2)
         self.assertEqual(runner.invoke(app, ['tts', 'input/', '--retries', '-1']).exit_code, 2)
+
+    def test_vietnamese_tts_dry_run_is_offline(self):
+        from typer.testing import CliRunner
+        from src.main import app
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / 'hai_dua_tre.txt'
+            source.write_text('Nội dung truyện tiếng Việt.')
+            background = root / 'background.jpg'
+            background.write_bytes(b'image')
+            config = root / 'vietnamese.json'
+            config.write_text(json.dumps({
+                'command': 'tts',
+                'vi_path': str(source),
+                'provider': 'edge-tts',
+                'voice': 'vi-VN-HoaiMyNeural',
+                'background': str(background),
+                'dry_run': True,
+            }), encoding='utf-8')
+            with patch('src.main.get_tts_provider') as provider, \
+                 patch('src.main.NovelPipeline') as pipeline:
+                result = CliRunner().invoke(app, ['tts', '--config', str(config)])
+            self.assertEqual(result.exit_code, 0, result.output)
+            self.assertIn('Dry run', result.output)
+            provider.assert_not_called()
+            pipeline.assert_not_called()
+
+    def test_vietnamese_tts_can_render_and_upload(self):
+        from typer.testing import CliRunner
+        from src.main import app
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / 'hai_dua_tre.txt'
+            source.write_text('Nội dung truyện tiếng Việt.')
+            background = root / 'background.jpg'
+            background.write_bytes(b'image')
+            with patch('src.main.get_tts_provider'), \
+                 patch('src.main.NovelPipeline') as pipeline, \
+                 patch('src.config.YOUTUBE_CHANNEL_ID', 'channel'), \
+                 patch('src.config.YOUTUBE_TOKEN_FILE', root / 'token.json'):
+                (root / 'token.json').write_text('{}')
+                pipeline.return_value.create_vietnamese_media.return_value = (
+                    [root / 'hai_dua_tre.mp3'], [root / 'hai_dua_tre.mp4']
+                )
+                result = CliRunner().invoke(app, [
+                    'tts', str(source),
+                    '--background', str(background),
+                    '--video-title', 'Hai đứa trẻ',
+                    '--upload-youtube',
+                ])
+            self.assertEqual(result.exit_code, 0, result.output)
+            pipeline.return_value.create_vietnamese_media.assert_called_once()
+            pipeline.return_value.upload_videos.assert_called_once()
 
     def test_empty_file_records_failure_and_cli_exits_nonzero(self):
         from typer.testing import CliRunner

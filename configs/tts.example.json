@@ -1,0 +1,23 @@
+{
+  "command": "tts",
+  "vi_path": "input/my_story_vi",
+  "provider": "vieneu",
+  "voice": "Ngọc Lan",
+  "rate": "+0%",
+  "cleanup_temp": true,
+  "combine": true,
+  "concurrency": 3,
+  "resume": true,
+  "state_dir": "output/.state",
+  "retries": 2,
+  "continue_on_error": true,
+  "background": null,
+  "story_config": null,
+  "video_title": "",
+  "video_output_dir": "output/videos",
+  "chapters_per_video": 1,
+  "upload_youtube": false,
+  "youtube_metadata_file": null,
+  "youtube_privacy": "private",
+  "dry_run": false
+}

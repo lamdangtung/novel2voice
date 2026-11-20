@@ -1,0 +1,19 @@
+{
+  "command": "process",
+  "input_path": "input/my_story/chapter_1.txt",
+  "translation_provider": "deepseek",
+  "model": "deepseek-chat",
+  "provider": "vieneu",
+  "voice": "Ngọc Lan",
+  "rate": "+0%",
+  "glossary_path": "glossary.csv",
+  "cleanup_temp": true,
+  "concurrency": 3,
+  "max_chapters": 1,
+  "output_audio": "output/chapter_1.mp3",
+  "background": null,
+  "video_title": "",
+  "video_output_dir": "output/videos",
+  "chapters_per_video": 1,
+  "upload_youtube": false
+}

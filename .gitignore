@@ -232,3 +232,12 @@ client_secrets*.json
 youtube_token*.json
 assets
 glossary.csv
+
+# configuration files
+config.json
+configs/process.json
+configs/vietnamese.json
+configs/story.json
+configs/tts.json
+configs/youtube.json
+configs/telegram.json
